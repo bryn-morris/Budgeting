@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/bryn-morris/Budgeting/issues"
   },
-  "homepage": "https://github.com/bryn-morris/Budgeting#readme"
+  "homepage": "https://github.com/bryn-morris/Budgeting#readme",
+  "devDependencies": {
+    "@google/clasp": "^3.2.0"
+  }
 }
