@@ -7,17 +7,19 @@
     const row = e.range.getRow();
     const date_col = config_key.date_set_column;
     const id_col = config_key.category_id_column;
+    const watch_col = config_key.watch_column;
     const numRows = e.range.getNumRows();
     const idCell = edited_sheet.getRange(row, id_col, numRows, 1);
-    console.log(`RowValue:: ${row}`);
-    if (idCell.getValue()) {
+    const watchCell = edited_sheet.getRange(row, watch_col, numRows, 1);
+    if (idCell.getValue() && watchCell.getValue()) {
       edited_sheet.getRange(row, date_col, numRows, 1).setValue(Utilities.formatDate(
         /* @__PURE__ */ new Date(),
         Session.getScriptTimeZone(),
         "yyyy-MM-dd"
       ));
+    } else {
+      edited_sheet.getRange(row, date_col, numRows, 1).setValue("");
     }
-    edited_sheet.getRange(row, date_col, numRows, 1).setValue("");
     return;
   }
 
