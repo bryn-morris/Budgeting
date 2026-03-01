@@ -17,8 +17,6 @@ export function syncMCR() {
     // Grab data from Ready Rows in MCR Table
     const readyRows = parseMCRTable(ui, mcrSheet, mcrCfgObj);
 
-    console.log(`Ready Rows Variable from MCR ${readyRows}`);
-
     // SyncMCR to Other Sheets, return the rows that were processed
     const processedRows = syncMCRRowsToSheets_(ss,mcrSheet, mcrCfgObj, readyRows);
 

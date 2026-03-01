@@ -12,7 +12,7 @@ export function parseMCRTable(ui, mcrSheet, mcrCfgObj) {
         //If table has no entries, abort
         if(lastRowPos < startRowPos) return;
 
-        console.log(`last Row POS ${lastRowPos}`)
+    
         // Grab Status Values from Status Column
         const statusCells = mcrSheet.getRange(startRowPos, status_column_id, lastRowPos-startRowPos+1, 1);
         const statusValues = statusCells.getValues();
@@ -32,7 +32,7 @@ export function parseMCRTable(ui, mcrSheet, mcrCfgObj) {
         throw err;
     }
     
-    if(!readyRows.length) return readyRows;
+    if(!readyRows.length) return [];
     
-    return []; 
+    return readyRows; 
 };

@@ -345,7 +345,6 @@
       const status_column_id = mcrCfgObj.mcr_status_column;
       const lastRowPos = getLastRowofTable_(mcrSheet, mcrCfgObj);
       if (lastRowPos < startRowPos) return;
-      console.log(`last Row POS ${lastRowPos}`);
       const statusCells = mcrSheet.getRange(startRowPos, status_column_id, lastRowPos - startRowPos + 1, 1);
       const statusValues = statusCells.getValues();
       statusValues.forEach(
@@ -361,8 +360,8 @@
 ${err.message}`);
       throw err;
     }
-    if (!readyRows.length) return readyRows;
-    return [];
+    if (!readyRows.length) return [];
+    return readyRows;
   }
 
   // src/services/mcr/sync/formUpsert/buildRecurringAutopayIndex.js
@@ -532,7 +531,6 @@ ${err.message}`);
     const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
     try {
       const readyRows = parseMCRTable(ui, mcrSheet, mcrCfgObj);
-      console.log(`Ready Rows Variable from MCR ${readyRows}`);
       const processedRows = syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows);
       syncMRCRowsToForm(ss, ui, mcrSheet, mcrCfgObj);
       cleanupMCRSync(ss, mcrCfgObj, mcrSheet);
