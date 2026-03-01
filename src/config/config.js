@@ -37,9 +37,9 @@ export const CONFIG_OBJECT = {
     },
     'Master Category Registry':{
       tab_name: 'Master Category Registry',
-      watch_column: "",
+      watch_column: null,
       table_start_row:5,
-      date_set_column: "",
+      date_set_column: null,
       category_id_column: 3,
       category_name_column: 5,
 

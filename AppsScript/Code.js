@@ -5,13 +5,20 @@
     const config_key = CONFIG_OBJECT.sheets[edited_sheet.getName()];
     if (!config_key || config_key.table_start_row == null || config_key.watch_column == null) return;
     const row = e.range.getRow();
-    const col = config_key.date_set_column;
+    const date_col = config_key.date_set_column;
+    const id_col = config_key.category_id_column;
     const numRows = e.range.getNumRows();
-    edited_sheet.getRange(row, col, numRows, 1).setValue(Utilities.formatDate(
-      /* @__PURE__ */ new Date(),
-      Session.getScriptTimeZone(),
-      "yyyy-MM-dd"
-    ));
+    const idCell = edited_sheet.getRange(row, id_col, numRows, 1);
+    console.log(`RowValue:: ${row}`);
+    if (idCell.getValue()) {
+      edited_sheet.getRange(row, date_col, numRows, 1).setValue(Utilities.formatDate(
+        /* @__PURE__ */ new Date(),
+        Session.getScriptTimeZone(),
+        "yyyy-MM-dd"
+      ));
+    }
+    edited_sheet.getRange(row, date_col, numRows, 1).setValue("");
+    return;
   }
 
   // src/config/config.js
@@ -53,9 +60,9 @@
       },
       "Master Category Registry": {
         tab_name: "Master Category Registry",
-        watch_column: "",
+        watch_column: null,
         table_start_row: 5,
-        date_set_column: "",
+        date_set_column: null,
         category_id_column: 3,
         category_name_column: 5,
         mcr_line_start: 3,
