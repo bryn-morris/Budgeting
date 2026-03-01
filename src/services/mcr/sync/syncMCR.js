@@ -2,6 +2,7 @@ import { CONFIG_OBJECT } from "../../../config/config.js"
 import { syncMCRRowsToSheets_ } from "./sheetUpdate/syncMCRRowsToSheets.js";
 import { cleanupMCRSync } from "../cleanup/cleanupMCRSync.js";
 import { parseMCRTable } from "./sheetUpdate/parseMCRTable.js";
+import { syncMRCRowsToForm } from "./formUpsert/syncMCRRowsToForm.js";
 
 export function syncMCR() {
 
@@ -16,23 +17,21 @@ export function syncMCR() {
     // Grab data from Ready Rows in MCR Table
     const readyRows = parseMCRTable(mcrSheet, mcrCfgObj);
 
+    console.log(`Ready Rows Variable from MCR ${readyRows}`);
+
     // SyncMCR to Other Sheets, return the rows that were processed
     const processedRows = syncMCRRowsToSheets_(ss,mcrSheet, mcrCfgObj, readyRows);
 
-    // Sync MCR to Google Form
-      // Income Categories
-      // Expense Categories
-      // Pool Categories
-
-    SpreadsheetApp.getUi().alert(`Sync complete.\nProcessed: ${processedRows.length}`);
+    // SyncMCR rows to Form
+    syncMRCRowsToForm(ss, ui, mcrSheet, mcrCfgObj);
 
     // Cleanup
-    // cleanupMCRSync.js
+    cleanupMCRSync(ss, mcrCfgObj, mcrSheet);
+
+    SpreadsheetApp.getUi().alert(`Sync complete.\nProcessed: ${processedRows.length}`);
 
   } catch (err) {
     ui.alert(`Sync failed.\n${err.message}`);
     throw err;
   }
-
-  // Edit Pool editing entries
 };

@@ -16,6 +16,15 @@
 
   // src/config/config.js
   var CONFIG_OBJECT2 = {
+    form: {
+      form_id: "1WT_DkTsPOZ6Ys_DCVxdJtIcyTnLhCwYIs7Xl3cyZHk0",
+      dropdown_ids: {
+        expense_category: "752519196",
+        expense_pools_category: "1067936705",
+        income_category: "658637086",
+        pool_funding_category: "1777025688"
+      }
+    },
     sheets: {
       "Income Review": {
         tab_name: "Income Review",
@@ -29,6 +38,7 @@
         tab_name: "Recurring Payments (Fixed Monthly Expenses)",
         watch_column: 6,
         table_start_row: 7,
+        autopay_column: 8,
         date_set_column: 10,
         category_id_column: 3,
         category_name_column: 4
@@ -57,7 +67,8 @@
         tab_name: "Pools (Budgeted Non-Monthly Expenses)",
         table_start_row: 4,
         category_id_column: 2,
-        category_name_column: 3
+        category_name_column: 3,
+        current_balance: 6
       }
     },
     category_mapping: {
@@ -131,13 +142,30 @@
     return { row, id, type, name, activeStatus, formOrder };
   }
 
+  // src/services/mcr/shared/getLastRowofTable.js
+  function getLastRowofTable_(sheet, targetConfig) {
+    const startRow = targetConfig.table_start_row;
+    const idCol = targetConfig.category_id_column;
+    const capLast = sheet.getLastRow();
+    if (capLast < startRow) return { lastRow: startRow - 1, numRows: 0 };
+    const idVals = sheet.getRange(startRow, idCol, capLast - startRow + 1, 1).getValues();
+    let count = 0;
+    for (let i = 0; i < idVals.length; i++) {
+      const id = String(idVals[i][0] ?? "").trim();
+      if (!id) break;
+      count++;
+    }
+    const lastRow = startRow + count - 1;
+    return lastRow;
+  }
+
   // src/services/mcr/sync/sheetUpdate/upsertMCRLine.js
-  function upsertMCRLine_(ss2, targetSheetName, targetCfg, upsertData) {
-    const sheet = ss2.getSheetByName(targetSheetName);
+  function upsertMCRLine_(ss, targetSheetName, targetCfg, upsertData) {
+    const sheet = ss.getSheetByName(targetSheetName);
     const target_id_col = targetCfg.category_id_column;
     const target_name_col = targetCfg.category_name_column;
     const target_start_row = targetCfg.table_start_row;
-    const target_last_row = sheet.getLastRow();
+    const target_last_row = getLastRowofTable_(sheet, targetCfg);
     const numRows2 = Math.max(0, target_last_row - target_start_row + 1);
     let existingRow = null;
     if (numRows2 > 0) {
@@ -148,49 +176,20 @@
     if (existingRow) {
       sheet.getRange(existingRow, target_name_col).setValue(upsertData.name);
     } else {
-      const newRow = sheet.getLastRow() + 1;
+      const newRow = sheet.getLastRowofTable_(sheet, targetCfg) + 1;
       sheet.getRange(newRow, target_id_col).setValue(upsertData.id);
       sheet.getRange(newRow, target_name_col).setValue(upsertData.name);
     }
   }
 
-  // src/services/mcr/shared/findPoolsTotalEndRow.js
-  function findPoolsTotalEndRow_(sheet, cfg) {
-    const startRow = cfg.table_start_row;
-    const idCol = cfg.category_id_column;
-    const nameCol = cfg.category_name_column;
-    const lastRow = sheet.getLastRow();
-    if (lastRow < startRow) return startRow - 1;
-    const numRows2 = lastRow - startRow + 1;
-    const ids = sheet.getRange(startRow, idCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
-    const names = sheet.getRange(startRow, nameCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
-    let lastDataOffset = -1;
-    let blankStreak = 0;
-    const BLANK_STREAK_TO_STOP = 3;
-    for (let i = 0; i < numRows2; i++) {
-      const hasData = ids[i] !== "" || names[i] !== "";
-      if (hasData) {
-        lastDataOffset = i;
-        blankStreak = 0;
-      } else {
-        blankStreak++;
-        if (blankStreak >= BLANK_STREAK_TO_STOP && lastDataOffset !== -1) {
-          break;
-        }
-      }
-    }
-    if (lastDataOffset === -1) return startRow - 1;
-    return startRow + lastDataOffset;
-  }
-
   // src/services/mcr/sync/sheetUpdate/upsertPoolTotalRow.js
-  function upsertPoolTotalRow_(ss2, poolsSheetName, poolsCfg, entry) {
-    const sheet = ss2.getSheetByName(poolsSheetName);
+  function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
+    const sheet = ss.getSheetByName(poolsSheetName);
     if (!sheet) throw new Error(`Pools sheet not found: ${poolsSheetName}`);
     const idCol = poolsCfg.category_id_column;
     const nameCol = poolsCfg.category_name_column;
     const startRow = poolsCfg.table_start_row;
-    const endRow = findPoolsTotalEndRow_(sheet, poolsCfg);
+    const endRow = getLastRowofTable_(sheet, poolsCfg);
     let ids = [];
     let names = [];
     if (numRows > 0) {
@@ -223,10 +222,10 @@
   }
 
   // src/services/mcr/sync/sheetUpdate/syncMCRRowsToSheets.js
-  function syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2) {
+  function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
     const processedRows = [];
     try {
-      for (const row of readyRows2) {
+      for (const row of readyRows) {
         const entry = parseMCRLine_(mcrSheet, row, mcrCfgObj);
         if (!entry) continue;
         const targetSheetName = CONFIG_OBJECT2.category_mapping[entry.type];
@@ -235,9 +234,9 @@
           throw new Error(`MCR row ${row}: unknown type "${entry.type}"`);
         }
         if (entry.type === "pool") {
-          upsertPoolTotalRow_(ss2, targetSheetName, targetCfg, entry);
+          upsertPoolTotalRow_(ss, targetSheetName, targetCfg, entry);
         } else {
-          upsertMCRLine_(ss2, targetSheetName, targetCfg, entry);
+          upsertMCRLine_(ss, targetSheetName, targetCfg, entry);
         }
         processedRows.push(row);
       }
@@ -250,19 +249,106 @@
     }
   }
 
+  // src/services/mcr/cleanup/cleanupTargetTable.js
+  function cleanupTargetTable_(targetSheet, targetValidIDSet) {
+    const targetSheetName = targetSheet.getName();
+    const targetConfig = CONFIG_OBJECT2.sheets[targetSheetName];
+    const startRow = targetConfig.table_start_row;
+    const lastRow = getLastRowofTable_(targetSheet, targetConfig);
+    const idCol = targetConfig.category_id_column;
+    const numRows2 = Math.max(0, lastRow - startRow + 1);
+    if (numRows2 === 0) return 0;
+    const rawTargetSheetIds = targetSheet.getRange(startRow, idCol, numRows2, 1).getValues();
+    const normalizedTargetIDs = rawTargetSheetIds.map(
+      (r) => String(r[0]).trim()
+    );
+    let deletedRowsCount = 0;
+    for (let i = normalizedTargetIDs.length - 1; i >= 0; i--) {
+      const rowId = normalizedTargetIDs[i];
+      if (!rowId) continue;
+      if (!targetValidIDSet.has(rowId)) {
+        targetSheet.deleteRow(startRow + i);
+        deletedRowsCount++;
+      }
+    }
+    return deletedRowsCount;
+  }
+
+  // src/services/mcr/cleanup/getValidIDSetByMCRType.js
+  function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
+    const startRow = mcrConfig.mcr_table_start_row;
+    const lastRow = getLastRowofTable_(mcrSheet, mcrConfig);
+    const validIDObj = {
+      recurring: /* @__PURE__ */ new Set(),
+      variable: /* @__PURE__ */ new Set(),
+      pool: /* @__PURE__ */ new Set(),
+      income: /* @__PURE__ */ new Set()
+    };
+    if (lastRow < startRow) {
+      return validIDObj;
+    }
+    for (let r = startRow; r <= lastRow; r++) {
+      const id = String(
+        mcrSheet.getRange(r, mcrConfig.id_column).getValue()
+      ).trim();
+      if (!id) continue;
+      const active = String(
+        mcrSheet.getRange(r, mcrConfig.active_status_column).getValue()
+      ).trim().toUpperCase();
+      if (active !== "Y") continue;
+      if (!isMCRRowComplete_(mcrSheet, r, mcrConfig)) continue;
+      const rowType = String(
+        mcrSheet.getRange(r, mcrConfig.type_column).getValue()
+      ).trim().toLowerCase();
+      if (!validIDObj[rowType]) continue;
+      validIDObj[rowType].add(id);
+    }
+    return validIDObj;
+  }
+
+  // src/services/mcr/cleanup/cleanupMCRSync.js
+  function cleanupMCRSync(ss, mcrConfig, mcrSheet) {
+    const {
+      recurring: validRecurringIds,
+      variable: validVariableIds,
+      pool: validPoolIds,
+      income: validIncomeIds
+    } = getValidIDSetByMCRType_(mcrSheet, mcrConfig);
+    let deletedEntries = 0;
+    const incomeConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.variable];
+    const incomeSheet = ss.getSheetByName(incomeConfig.tab_name);
+    deletedEntries += cleanupTargetTable_(incomeSheet, validIncomeIds);
+    const recurringConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.recurring];
+    const recurringSheet = ss.getSheetByName(recurringConfig.tab_name);
+    deletedEntries += cleanupTargetTable_(recurringSheet, validRecurringIds);
+    const variableConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.variable];
+    const variableSheet = ss.getSheetByName(variableConfig.tab_name);
+    deletedEntries += cleanupTargetTable_(variableSheet, validVariableIds);
+    const poolConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.pool];
+    const poolSheet = ss.getSheetByName(poolConfig.tab_name);
+    deletedEntries += cleanupTargetTable_(poolSheet, validPoolIds);
+    SpreadsheetApp.getActive().toast(
+      `Cleanup complete: ${deletedEntries} rows removed.`,
+      "MCR Sync",
+      5
+      // seconds
+    );
+  }
+
   // src/services/mcr/sync/sheetUpdate/parseMCRTable.js
   function parseMCRTable(mcrSheet, mcrCfgObj) {
+    const readyRows = [];
     try {
       const startRowPos = mcrCfgObj.mcr_table_start_row;
-      const lastRowPos = mcrSheet.getLastRow();
+      const lastRowPos = getLastRowofTable_(mcrSheet, mcrCfgObj);
       if (lastRowPos < startRowPos) return;
+      console.log(`last Row POS ${lastRowPos}`);
       const statusCells = mcrSheet.getRange(startRowPos, mcrCfgObj.mcr_status_column, lastRowPos - startRowPos + 1, 1);
       const statusValues = statusCells.getValues();
-      const readyRows2 = [];
       statusValues.forEach(
         (r, i) => {
           if (String(r[0]).trim() === "READY TO SYNC") {
-            readyRows2.push(startRowPos + i);
+            readyRows.push(startRowPos + i);
           }
           ;
         }
@@ -272,18 +358,181 @@
 ${err.message}`);
       throw err;
     }
-    if (!readyRows.length) return;
+    if (!readyRows.length) return readyRows;
+    return [];
+  }
+
+  // src/services/mcr/sync/formUpsert/buildRecurringAutopayIndex.js
+  function buildRecurringAutopayIndex_(ss, recurringCfg) {
+    const sheet = ss.getSheetByName(recurringCfg.tab_name);
+    if (!sheet) throw new Error(`Missing sheet: "${recurringCfg.tab_name}"`);
+    const startRow = recurringCfg.table_start_row;
+    const lastRow = getLastRowofTable_(sheet, recurringCfg);
+    if (lastRow < startRow) return /* @__PURE__ */ new Map();
+    const numRows2 = lastRow - startRow + 1;
+    const idVals = sheet.getRange(startRow, recurringCfg.category_id_column, numRows2, 1).getValues();
+    const apVals = sheet.getRange(startRow, recurringCfg.autopay_column, numRows2, 1).getValues();
+    const idx = /* @__PURE__ */ new Map();
+    for (let i = 0; i < numRows2; i++) {
+      const id = String(idVals[i][0] ?? "").trim();
+      if (!id) continue;
+      const autopay = String(apVals[i][0] ?? "").trim().toUpperCase() === "Y";
+      idx.set(id, autopay);
+    }
+    return idx;
+  }
+
+  // src/services/mcr/sync/formUpsert/getActiveMCRbyType.js
+  function getActiveMcrByType_(ss, mcrSheet, cfg) {
+    const startRow = cfg.mcr_table_start_row;
+    const lastRow = getLastRowofTable_(mcrSheet, cfg);
+    const out = { recurring: [], variable: [], pool: [], income: [] };
+    if (lastRow < startRow) return out;
+    const recurringCfg = CONFIG_OBJECT.sheets["Recurring Payments (Fixed Monthly Expenses)"];
+    const autopayById = recurringCfg ? buildRecurringAutopayIndex_(ss, recurringCfg) : /* @__PURE__ */ new Map();
+    const width = cfg.mcr_line_end - cfg.mcr_line_start + 1;
+    const rows = mcrSheet.getRange(startRow, cfg.mcr_line_start, lastRow - startRow + 1, width).getValues();
+    const idxId = cfg.id_column - cfg.mcr_line_start;
+    const idxType = cfg.type_column - cfg.mcr_line_start;
+    const idxName = cfg.name_column - cfg.mcr_line_start;
+    const idxOrder = cfg.form_order_column - cfg.mcr_line_start;
+    const idxActive = cfg.active_status_column - cfg.mcr_line_start;
+    rows.forEach((r) => {
+      const active = String(r[idxActive] ?? "").trim().toUpperCase();
+      if (active !== "Y") return;
+      const id = String(r[idxId] ?? "").trim();
+      const type = String(r[idxType] ?? "").trim().toLowerCase();
+      const name = String(r[idxName] ?? "").trim();
+      const orderRaw = r[idxOrder];
+      if (!id || !name) return;
+      if (!out[type]) return;
+      if (type === "recurring" && autopayById.get(id) === true) {
+        return;
+      }
+      const order = Number(orderRaw);
+      out[type].push({
+        id,
+        name,
+        order: Number.isFinite(order) ? order : 9999
+      });
+    });
+    Object.keys(out).forEach((k) => {
+      out[k].sort(
+        (a, b) => a.order - b.order || a.name.localeCompare(b.name)
+      );
+    });
+    return out;
+  }
+
+  // src/services/mcr/sync/formUpsert/getPoolBalancesById.js
+  function getPoolBalancesById_(ss) {
+    const poolsSheetName = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.pool].tab_name;
+    const cfg = CONFIG_OBJECT.sheets[poolsSheetName];
+    const sheet = ss.getSheetByName(poolsSheetName);
+    if (!sheet) {
+      throw new Error(`Pools sheet not found: ${poolsSheetName}`);
+    }
+    const startRow = cfg.table_start_row;
+    const lastRow = getLastRowofTable_(sheet, cfg);
+    if (!lastRow || lastRow < startRow) {
+      return /* @__PURE__ */ new Map();
+    }
+    const numRows2 = lastRow - startRow + 1;
+    const ids = sheet.getRange(startRow, cfg.category_id_column, numRows2, 1).getDisplayValues().map((r) => String(r[0]).trim());
+    const balances = sheet.getRange(startRow, cfg.current_balance, numRows2, 1).getDisplayValues().map((r) => String(r[0]).trim());
+    const map = /* @__PURE__ */ new Map();
+    for (let i = 0; i < numRows2; i++) {
+      const id = ids[i];
+      const bal = balances[i];
+      if (!id) continue;
+      map.set(id, bal);
+    }
+    return map;
+  }
+
+  // src/services/mcr/sync/formUpsert/constructor/expenseCategoryConstructor.js
+  function expenseCategoryConstructor(mcrByType) {
+    const expenseArray = [
+      ...mcrByType.recurring.map((x) => ({ ...x, type: "recurring" })),
+      ...mcrByType.variable.map((x) => ({ ...x, type: "variable" }))
+    ];
+    expenseArray.sort((a, b) => {
+      const d = (a.order ?? 9999) - (b.order ?? 9999);
+      if (d !== 0) return d;
+    });
+    return expenseArray.map((x) => {
+      const icon = x.type === "recurring" ? "\u{1F501}" : "\u{1F7E1}";
+      return `${icon} ${x.name}`;
+    });
+  }
+
+  // src/services/mcr/sync/formUpsert/constructor/incomeCategoryCosntructor.js
+  function incomeCategoryConstructor(mcrByType) {
+    const arr = [...mcrByType.income || []];
+    arr.sort((a, b) => {
+      const d = (a.order ?? 9999) - (b.order ?? 9999);
+      if (d !== 0) return d;
+    });
+    return arr.map((x) => `\u{1F7E2} ${x.name}`);
+  }
+
+  // src/services/mcr/sync/formUpsert/constructor/poolCategoryConstructor.js
+  function poolsCategoryConstructor(mcrByType, poolBalancesById) {
+    const arr = [...mcrByType.pool || []];
+    arr.sort((a, b) => {
+      const d = (a.order ?? 9999) - (b.order ?? 9999);
+      if (d !== 0) return d;
+    });
+    return arr.map((x) => {
+      const bal = poolBalancesById?.get(x.id);
+      return bal ? `\u{1F535} ${x.name} \u2014 ${bal}` : `\u{1F535} ${x.name}`;
+    });
+  }
+
+  // src/services/mcr/sync/formUpsert/setDropdownChoicesByItemId.js
+  function setDropdownChoicesByItemId(form, itemId, choices) {
+    const idNum = Number(itemId);
+    if (!idNum) throw new Error(`Invalid form itemId: ${itemId}`);
+    const item = form.getItemById(idNum);
+    if (!item) throw new Error(`Form item not found: itemId=${itemId}`);
+    item.asListItem().setChoiceValues(choices);
+  }
+
+  // src/services/mcr/sync/formUpsert/syncMCRRowsToForm.js
+  function syncMRCRowsToForm(ss, ui2, mcrSheet, mcrCfgObj) {
+    const formCfg = CONFIG_OBJECT.form;
+    const ids = formCfg.dropdown_ids;
+    const form = FormApp.openById(formCfg.form_id);
+    try {
+      const formDataByType = getActiveMcrByType_(ss, mcrSheet, mcrCfgObj);
+      const poolIdBalMap = getPoolBalancesById_(ss);
+      const expenseCatArray = expenseCategoryConstructor(formDataByType);
+      const incomeCatArray = incomeCategoryConstructor(formDataByType);
+      const poolsCatArray = poolsCategoryConstructor(formDataByType, poolIdBalMap);
+      setDropdownChoicesByItemId(form, ids.expense_category, expenseCatArray);
+      setDropdownChoicesByItemId(form, ids.income_category, incomeCatArray);
+      setDropdownChoicesByItemId(form, ids.expense_pools_category, poolsCatArray);
+      setDropdownChoicesByItemId(form, ids.pool_funding_category, poolsCatArray);
+    } catch (err) {
+      ui2.alert(`Form Category Sync failed.
+${err.message}`);
+      throw err;
+    }
+    ;
   }
 
   // src/services/mcr/sync/syncMCR.js
   function syncMCR() {
-    const ss2 = SpreadsheetApp.getActive();
+    const ss = SpreadsheetApp.getActive();
     const ui2 = SpreadsheetApp.getUi();
-    const mcrSheet = ss2.getSheetByName("Master Category Registry");
+    const mcrSheet = ss.getSheetByName("Master Category Registry");
     const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
     try {
-      const readyRows2 = parseMCRTable(mcrSheet, mcrCfgObj);
-      const processedRows = syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2);
+      const readyRows = parseMCRTable(mcrSheet, mcrCfgObj);
+      console.log(`Ready Rows Variable from MCR ${readyRows}`);
+      const processedRows = syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows);
+      syncMRCRowsToForm(ss, ui2, mcrSheet, mcrCfgObj);
+      cleanupMCRSync(ss, mcrCfgObj, mcrSheet);
       SpreadsheetApp.getUi().alert(`Sync complete.
 Processed: ${processedRows.length}`);
     } catch (err) {
@@ -295,7 +544,7 @@ ${err.message}`);
 
   // src/triggers/runMCRSync.js
   function runMCRSync() {
-    syncMCR(ss);
+    syncMCR();
   }
 
   // src/main.js

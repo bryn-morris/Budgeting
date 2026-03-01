@@ -1,3 +1,5 @@
+import { getLastRowofTable_ } from "../../shared/getLastRowofTable";
+
 export function upsertMCRLine_(ss, targetSheetName, targetCfg, upsertData) {
   
   const sheet = ss.getSheetByName(targetSheetName);
@@ -7,7 +9,7 @@ export function upsertMCRLine_(ss, targetSheetName, targetCfg, upsertData) {
   const target_id_col = targetCfg.category_id_column;
   const target_name_col = targetCfg.category_name_column;
   const target_start_row = targetCfg.table_start_row;
-  const target_last_row = sheet.getLastRow();
+  const target_last_row = getLastRowofTable_(sheet,targetCfg);
   const numRows = Math.max(0,target_last_row-target_start_row + 1);
 
   let existingRow = null;
@@ -23,7 +25,7 @@ export function upsertMCRLine_(ss, targetSheetName, targetCfg, upsertData) {
   if (existingRow) {
     sheet.getRange(existingRow, target_name_col).setValue(upsertData.name);
   } else {
-    const newRow = sheet.getLastRow() + 1;
+    const newRow = sheet.getLastRowofTable_(sheet, targetCfg) + 1;
     sheet.getRange(newRow, target_id_col).setValue(upsertData.id);
     sheet.getRange(newRow, target_name_col).setValue(upsertData.name);
   }

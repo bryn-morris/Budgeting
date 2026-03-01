@@ -1,11 +1,11 @@
 export const CONFIG_OBJECT = {
   form :{
-    form_id: "1WT_DkTsPOZ6Ys_DCVxdJtIcyTnLhCwYIs7Xl3cyZHk0",
+    form_id: "insert form id",
     dropdown_ids: {
-      expense_category: "752519196",
-      expense_pools_category: "1067936705",
-      income_category: "658637086",
-      pool_funding_category: "1777025688",
+      expense_category: "insert dropdown id",
+      expense_pools_category: "insert dropdown id",
+      income_category: "insert dropdown id",
+      pool_funding_category: "insert dropdown id",
     }
   },
   sheets: {
@@ -21,7 +21,6 @@ export const CONFIG_OBJECT = {
       tab_name: 'Recurring Payments (Fixed Monthly Expenses)',
       watch_column: 6,
       table_start_row: 7,
-      autopay_column: 8,
       date_set_column: 10,
       category_id_column: 3,
       category_name_column: 4
@@ -51,7 +50,6 @@ export const CONFIG_OBJECT = {
       table_start_row: 4,         
       category_id_column: 2,
       category_name_column: 3,
-      current_balance: 6,
     },
   },
   category_mapping: {

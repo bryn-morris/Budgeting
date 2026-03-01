@@ -1,4 +1,4 @@
-import { findPoolsTotalEndRow_ } from "../../shared/findPoolsTotalEndRow";
+import { getLastRowofTable_ } from "../../shared/getLastRowofTable";
 
 export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   const sheet = ss.getSheetByName(poolsSheetName);
@@ -8,7 +8,7 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   const nameCol = poolsCfg.category_name_column;
   const startRow = poolsCfg.table_start_row; // 4
 
-  const endRow = findPoolsTotalEndRow_(sheet, poolsCfg);
+  const endRow = getLastRowofTable_(sheet, poolsCfg);
 
   // Read existing IDs/names only within the top Pools Total table
   let ids = [];

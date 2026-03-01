@@ -1,9 +1,10 @@
 import { isMCRRowComplete_ } from "../shared/isMCRRowComplete";
+import { getLastRowofTable_ } from "../shared/getLastRowofTable";
 
 export function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
 
   const startRow = mcrConfig.mcr_table_start_row;
-  const lastRow = mcrSheet.getLastRow();
+  const lastRow = getLastRowofTable_(mcrSheet, mcrConfig);
 
   const validIDObj = {
     recurring: new Set(),

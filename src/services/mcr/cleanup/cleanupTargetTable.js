@@ -1,5 +1,5 @@
 import { CONFIG_OBJECT } from "../../../config/config.js";
-import { findPoolsTotalEndRow_} from "../shared/findPoolsTotalEndRow.js";
+import { getLastRowofTable_ } from "../shared/getLastRowofTable.js";
 
 export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
 
@@ -7,13 +7,8 @@ export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
   const targetConfig = CONFIG_OBJECT.sheets[targetSheetName];
   const startRow = targetConfig.table_start_row;
 
-  let lastRow;
+  const lastRow = getLastRowofTable_(targetSheet,targetConfig);
 
-  if (targetSheetName === "Pools (Budgeted Non-Monthly Expenses)") {
-    lastRow = findPoolsTotalEndRow_(targetSheet, targetConfig);
-  } else {
-    lastRow = targetSheet.getLastRow();
-  }
 
   const idCol = targetConfig.category_id_column;
   const numRows = Math.max(0, lastRow - startRow + 1);

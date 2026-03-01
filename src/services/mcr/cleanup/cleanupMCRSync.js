@@ -2,10 +2,11 @@ import { CONFIG_OBJECT } from "../../../config/config.js";
 import { cleanupTargetTable_ } from "./cleanupTargetTable.js";
 import { getValidIDSetByMCRType_ } from "./getValidIDSetByMCRType";
 
-export function cleanupMCRSync(ss) {
-
-  const mcrConfig = CONFIG_OBJECT.sheets['Master Category Registry'];
-  const mcrSheet = ss.getSheetByName(mcrConfig.tab_name);
+export function cleanupMCRSync(
+  ss, 
+  mcrConfig, 
+  mcrSheet
+) {
 
   // Build valid ID sets by type
   const {
