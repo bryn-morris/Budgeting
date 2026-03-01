@@ -7,6 +7,7 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
   const processedRows = [];
   
   try {
+
     for (const row of readyRows) {
       const entry = parseMCRLine_(mcrSheet, row, mcrCfgObj);
 
@@ -20,7 +21,7 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
         throw new Error(`MCR row ${row}: unknown type "${entry.type}"`);
       }
 
-      // Skip pools for now
+
       if (entry.type === "pool") {
         upsertPoolTotalRow_(ss, targetSheetName, targetCfg, entry);
       } else{
@@ -36,6 +37,9 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
     });
 
     SpreadsheetApp.getUi().alert(`Sync complete.\nProcessed: ${processedRows.length}`);
+  
+    return processedRows;
+
   } catch (err) {
     throw err;
   }

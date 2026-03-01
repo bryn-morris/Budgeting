@@ -108,33 +108,180 @@
     mcrMarkStatus(e);
   }
 
-  // src/services/mcr/sync/syncMCR.js
-  function syncMCR() {
-    const ss2 = SpreadsheetApp.getActive();
-    const ui = SpreadsheetApp.getUi();
-    const mcrSheet = ss2.getSheetByName("Master Category Registry");
-    const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
+  // src/services/mcr/sync/parseMCRLine.js
+  function parseMCRLine_(mcrSheet, row, cfg2) {
+    const id = String(mcrSheet.getRange(row, cfg2.id_column).getValue()).trim();
+    const type = String(mcrSheet.getRange(row, cfg2.type_column).getValue()).trim().toLowerCase();
+    const name = String(mcrSheet.getRange(row, cfg2.name_column).getValue()).trim();
+    const activeStatus = String(mcrSheet.getRange(row, cfg2.active_status_column).getValue()).trim().toLowerCase();
+    const formOrder = Number(mcrSheet.getRange(row, cfg2.form_order_column).getValue());
+    if (activeStatus !== "Y") return null;
+    if (!id) throw new Error(`MCR row ${row}: missing ID`);
+    if (!type) throw new Error(`MCR row ${row}: missing Type`);
+    if (!name) throw new Error(`MCR row ${row}: missing Name`);
+    return { row, id, type, name, activeStatus, formOrder };
+  }
+
+  // src/services/mcr/sync/upsertMCRLine.js
+  function upsertMCRLine_(ss2, targetSheetName, targetCfg, upsertData) {
+    const sheet2 = ss2.getSheetByName(targetSheetName);
+    const target_id_col = targetCfg.category_id_column;
+    const target_name_col = targetCfg.category_name_column;
+    const target_start_row = targetCfg.table_start_row;
+    const target_last_row = sheet2.getLastRow();
+    const numRows2 = Math.max(0, target_last_row - target_start_row + 1);
+    let existingRow = null;
+    if (numRows2 > 0) {
+      const ids = sheet2.getRange(target_start_row, target_id_col, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+      const idx = ids.indexOf(upsertData.id);
+      if (idx !== -1) existingRow = target_start_row + idx;
+    }
+    if (existingRow) {
+      sheet2.getRange(existingRow, target_name_col).setValue(upsertData.name);
+    } else {
+      const newRow = sheet2.getLastRow() + 1;
+      sheet2.getRange(newRow, target_id_col).setValue(upsertData.id);
+      sheet2.getRange(newRow, target_name_col).setValue(upsertData.name);
+    }
+  }
+
+  // src/services/mcr/shared/findPoolsTotalEndRow.js
+  function findPoolsTotalEndRow_(sheet2, cfg2) {
+    const startRow = cfg2.table_start_row;
+    const idCol = cfg2.category_id_column;
+    const nameCol = cfg2.category_name_column;
+    const lastRow = sheet2.getLastRow();
+    if (lastRow < startRow) return startRow - 1;
+    const numRows2 = lastRow - startRow + 1;
+    const ids = sheet2.getRange(startRow, idCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+    const names = sheet2.getRange(startRow, nameCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+    let lastDataOffset = -1;
+    let blankStreak = 0;
+    const BLANK_STREAK_TO_STOP = 3;
+    for (let i = 0; i < numRows2; i++) {
+      const hasData = ids[i] !== "" || names[i] !== "";
+      if (hasData) {
+        lastDataOffset = i;
+        blankStreak = 0;
+      } else {
+        blankStreak++;
+        if (blankStreak >= BLANK_STREAK_TO_STOP && lastDataOffset !== -1) {
+          break;
+        }
+      }
+    }
+    if (lastDataOffset === -1) return startRow - 1;
+    return startRow + lastDataOffset;
+  }
+
+  // src/services/mcr/sync/upsetPoolTotalRow.js
+  function upsertPoolTotalRow_(ss2, poolsSheetName, poolsCfg, entry) {
+    const sheet2 = ss2.getSheetByName(poolsSheetName);
+    if (!sheet2) throw new Error(`Pools sheet not found: ${poolsSheetName}`);
+    const idCol = poolsCfg.category_id_column;
+    const nameCol = poolsCfg.category_name_column;
+    const startRow = poolsCfg.table_start_row;
+    const endRow = findPoolsTotalEndRow_(sheet2, poolsCfg);
+    let ids = [];
+    let names = [];
+    if (numRows > 0) {
+      ids = sheet2.getRange(startRow, idCol, numRows, 1).getValues().map((r) => String(r[0]).trim());
+      names = sheet2.getRange(startRow, nameCol, numRows, 1).getValues().map((r) => String(r[0]).trim());
+    }
+    const idx = ids.indexOf(entry.id);
+    if (idx !== -1) {
+      const existingRow = startRow + idx;
+      sheet2.getRange(existingRow, nameCol).setValue(entry.name);
+      return;
+    }
+    let insertOffset = -1;
+    for (let i = 0; i < numRows; i++) {
+      if (!ids[i] && !names[i]) {
+        insertOffset = i;
+        break;
+      }
+    }
+    if (insertOffset !== -1) {
+      const row = startRow + insertOffset;
+      sheet2.getRange(row, idCol).setValue(entry.id);
+      sheet2.getRange(row, nameCol).setValue(entry.name);
+    } else {
+      const row = endRow >= startRow ? endRow + 1 : startRow;
+      if (endRow >= startRow) sheet2.insertRowAfter(endRow);
+      sheet2.getRange(row, idCol).setValue(entry.id);
+      sheet2.getRange(row, nameCol).setValue(entry.name);
+    }
+  }
+
+  // src/services/mcr/sync/syncMCRRowsToSheets.js
+  function syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2) {
+    const processedRows = [];
     try {
+      for (const row of readyRows2) {
+        const entry = parseMCRLine_(mcrSheet, row, mcrCfgObj);
+        if (!entry) continue;
+        const targetSheetName = CONFIG_OBJECT2.category_mapping[entry.type];
+        const targetCfg = CONFIG_OBJECT2.sheets[targetSheetName];
+        if (!targetSheetName) {
+          throw new Error(`MCR row ${row}: unknown type "${entry.type}"`);
+        }
+        if (entry.type === "pool") {
+          upsertPoolTotalRow_(ss2, targetSheetName, targetCfg, entry);
+        } else {
+          upsertMCRLine_(ss2, targetSheetName, targetCfg, entry);
+        }
+        processedRows.push(row);
+      }
+      processedRows.forEach((r) => {
+        mcrSheet.getRange(r, mcrCfgObj.mcr_status_column).setValue("DONE");
+      });
+      SpreadsheetApp.getUi().alert(`Sync complete.
+Processed: ${processedRows.length}`);
+      return processedRows;
     } catch (err) {
-      ui.alert(`Sync failed.
+      throw err;
+    }
+  }
+
+  // src/services/mcr/sync/parseMCRTable.js
+  function parseMCRTable(mcrSheet, mcrCfgObj) {
+    try {
+      const startRowPos = mcrCfgObj.mcr_table_start_row;
+      const lastRowPos = mcrSheet.getLastRow();
+      if (lastRowPos < startRowPos) return;
+      const statusCells = mcrSheet.getRange(startRowPos, mcrCfgObj.mcr_status_column, lastRowPos - startRowPos + 1, 1);
+      const statusValues = statusCells.getValues();
+      const readyRows2 = [];
+      statusValues.forEach(
+        (r, i) => {
+          if (String(r[0]).trim() === "READY TO SYNC") {
+            readyRows2.push(startRowPos + i);
+          }
+          ;
+        }
+      );
+    } catch (err) {
+      ui.alert(`Could not parse MCR Table.
 ${err.message}`);
       throw err;
     }
-    const startRowPos = mcrCfgObj.mcr_table_start_row;
-    const lastRowPos = mcrSheet.getLastRow();
-    if (lastRowPos < startRowPos) return;
-    const statusCells = mcrSheet.getRange(startRowPos, mcrCfgObj.mcr_status_column, lastRowPos - startRowPos + 1, 1);
-    const statusValues = statusCells.getValues();
-    const readyRows = [];
-    statusValues.forEach(
-      (r, i) => {
-        if (String(r[0]).trim() === "READY TO SYNC") {
-          readyRows.push(startRowPos + i);
-        }
-        ;
-      }
-    );
     if (!readyRows.length) return;
+  }
+
+  // src/services/mcr/sync/syncMCR.js
+  function syncMCR() {
+    const ss2 = SpreadsheetApp.getActive();
+    const ui2 = SpreadsheetApp.getUi();
+    const mcrSheet = ss2.getSheetByName("Master Category Registry");
+    const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
+    try {
+      const readyRows2 = parseMCRTable(mcrSheet, mcrCfgObj);
+      syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2);
+    } catch (err) {
+      ui2.alert(`Sync failed.
+${err.message}`);
+      throw err;
+    }
   }
 
   // src/triggers/runMCRSync.js
