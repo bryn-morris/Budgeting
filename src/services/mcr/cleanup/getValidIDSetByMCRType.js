@@ -9,6 +9,7 @@ export function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
     recurring: new Set(),
     variable: new Set(),
     pool: new Set(),
+    income: new Set(),
   };
 
   if (lastRow < startRow) {

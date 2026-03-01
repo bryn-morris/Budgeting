@@ -11,10 +11,16 @@ export function cleanupMCRSync(ss) {
   const {
     recurring: validRecurringIds,
     variable: validVariableIds,
-    pool: validPoolIds
+    pool: validPoolIds,
+    income: validIncomeIds,
   } = getValidIDSetByMCRType_(mcrSheet, mcrConfig);
 
   let deletedEntries = 0;
+
+  // --- Income ---
+  const incomeConfig = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.variable];
+  const incomeSheet = ss.getSheetByName(incomeConfig.tab_name);
+  deletedEntries += cleanupTargetTable_(incomeSheet, validIncomeIds);
 
   // --- Recurring ---
   
