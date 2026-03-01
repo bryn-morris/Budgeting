@@ -1,4 +1,4 @@
-function findPoolsTotalEndRow_(sheet, cfg) {
+export function findPoolsTotalEndRow_(sheet, cfg) {
   const startRow = cfg.table_start_row; // 4
   const idCol = cfg.category_id_column;
   const nameCol = cfg.category_name_column;

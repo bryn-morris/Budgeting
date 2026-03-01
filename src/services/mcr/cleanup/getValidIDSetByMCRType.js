@@ -1,4 +1,6 @@
-function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
+import { isMCRRowComplete_ } from "../shared/isMCRRowComplete";
+
+export function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
 
   const startRow = mcrConfig.mcr_table_start_row;
   const lastRow = mcrSheet.getLastRow();

@@ -1,4 +1,9 @@
-function syncMCR() {
+import { CONFIG_OBJECT } from "../../../config/config.js"
+import { syncMCRRowsToSheets_ } from "./syncMCRRowsToSheets.js";
+import { cleanupMCRSync } from "../cleanup/cleanupMCRSync.js";
+
+
+export function syncMCR() {
 
   const ss = SpreadsheetApp.getActive();
   const ui = SpreadsheetApp.getUi();
@@ -9,6 +14,7 @@ function syncMCR() {
   try {
 
     // SyncMCR to Other Sheets
+    // syncMCRRowsToSheets_
 
     // Sync MCR to Google Form
       // Income Categories
@@ -16,6 +22,7 @@ function syncMCR() {
       // Pool Categories
 
     // Cleanup
+    // cleanupMCRSync.js
 
   } catch (err) {
     ui.alert(`Sync failed.\n${err.message}`);

@@ -1,4 +1,8 @@
-function mcrMarkStatus(e) {
+import { CONFIG_OBJECT } from "../../../config/config.js";
+import { isMcrRowEmpty_ } from "./isMCRRowEmpty";
+import { isMCRRowComplete_ } from "../shared/isMCRRowComplete";
+
+export function mcrMarkStatus(e) {
   
   const edited_sheet = e.range.getSheet();
   const config_key = CONFIG_OBJECT.sheets[edited_sheet.getName()];
@@ -42,20 +46,4 @@ function mcrMarkStatus(e) {
   // Status change if row is complete 
   statusCell.setValue("READY TO SYNC");
 
-}
-
-/////////////////////////////////////
-//////////////////// HELPERS
-/////////////////////////////////////
-
-function isMCRRowComplete_(sheet, row, config_key){
-  const width = config_key.mcr_line_end - config_key.mcr_line_start+1;
-  const values = sheet.getRange(row,config_key.mcr_line_start, 1, width).getValues()[0];
-  return values.every(v=>String(v).trim() !== "");
-}
-
-function isMcrRowEmpty_(sheet, row, cfg) {
-  const width = cfg.mcr_line_end - cfg.mcr_line_start + 1;
-  const values = sheet.getRange(row, cfg.mcr_line_start, 1, width).getValues()[0];
-  return values.every(v => String(v).trim() === "");
 }

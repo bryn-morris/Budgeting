@@ -1,4 +1,7 @@
-import parseMCRLine_ from "./parseMCRLine_"
+import { parseMCRLine_ } from "./parseMCRLine.js";
+import { CONFIG_OBJECT } from "../../../config/config.js";
+import { upsertMCRLine_ } from "./upsertMCRLine.js";
+import { upsertPoolTotalRow_ } from "./upsetPoolTotalRow.js"
 
 export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
   const processedRows = [];
@@ -19,7 +22,7 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
 
       // Skip pools for now
       if (entry.type === "pool") {
-        upsetPoolTotalRow_(ss, targetSheetName, targetCfg, entry);
+        upsertPoolTotalRow_(ss, targetSheetName, targetCfg, entry);
       } else{
         upsertMCRLine_(ss, targetSheetName, targetCfg, entry);
       }

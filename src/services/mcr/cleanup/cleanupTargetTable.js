@@ -1,4 +1,7 @@
-function cleanupTargetTable_(targetSheet, targetValidIDSet) {
+import { CONFIG_OBJECT } from "../../../config/config.js";
+import { findPoolsTotalEndRow_} from "../shared/findPoolsTotalEndRow.js";
+
+export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
 
   const targetSheetName = targetSheet.getName();
   const targetConfig = CONFIG_OBJECT.sheets[targetSheetName];

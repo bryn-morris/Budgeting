@@ -1,4 +1,8 @@
-function cleanupMCRSync(ss) {
+import { CONFIG_OBJECT } from "../../../config/config.js";
+import { cleanupTargetTable_ } from "./cleanupTargetTable.js";
+import { getValidIDSetByMCRType_ } from "./getValidIDSetByMCRType";
+
+export function cleanupMCRSync(ss) {
 
   const mcrConfig = CONFIG_OBJECT.sheets['Master Category Registry'];
   const mcrSheet = ss.getSheetByName(mcrConfig.tab_name);

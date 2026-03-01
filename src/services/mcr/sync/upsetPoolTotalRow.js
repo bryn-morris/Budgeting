@@ -1,4 +1,6 @@
-function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
+import { findPoolsTotalEndRow_ } from "../shared/findPoolsTotalEndRow";
+
+export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   const sheet = ss.getSheetByName(poolsSheetName);
   if (!sheet) throw new Error(`Pools sheet not found: ${poolsSheetName}`);
 

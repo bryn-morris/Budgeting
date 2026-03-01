@@ -9,7 +9,7 @@
 //   }
 // }
 
-function date_update(e) {
+export function date_update(e) {
 
   const edited_sheet = e.range.getSheet();
   const config_key = CONFIG_OBJECT.sheets[edited_sheet.getName()];

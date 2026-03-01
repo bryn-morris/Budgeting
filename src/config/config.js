@@ -1,4 +1,4 @@
-const CONFIG_OBJECT = {
+export const CONFIG_OBJECT = {
   sheets: {
     'Recurring Payments (Fixed Monthly Expenses)':{
       tab_name: 'Recurring Payments (Fixed Monthly Expenses)',
