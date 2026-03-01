@@ -21,10 +21,11 @@ export const CONFIG_OBJECT = {
       tab_name: 'Recurring Payments (Fixed Monthly Expenses)',
       watch_column: 6,
       table_start_row: 7,
-      autopay_column: 8,
       date_set_column: 10,
       category_id_column: 3,
-      category_name_column: 4
+      category_name_column: 4,
+
+      autopay_column: 8,
     },
     'Variable Payments (Variable Monthly Expenses)':{
       tab_name: 'Variable Payments (Variable Monthly Expenses)',
@@ -36,13 +37,16 @@ export const CONFIG_OBJECT = {
     },
     'Master Category Registry':{
       tab_name: 'Master Category Registry',
+      watch_column: "",
+      table_start_row:5,
+      date_set_column: "",
+      category_id_column: 3,
+      category_name_column: 5,
+
       mcr_line_start: 3,
       mcr_line_end: 7,
-      mcr_table_start_row:5,
       mcr_status_column:9,
-      id_column: 3,
       type_column: 4,
-      name_column: 5,
       form_order_column: 6,
       active_status_column: 7,
     },

@@ -1,8 +1,8 @@
 export function parseMCRLine_(mcrSheet, row, cfg) {
   
-  const id = String(mcrSheet.getRange(row, cfg.id_column).getValue()).trim();
+  const id = String(mcrSheet.getRange(row, cfg.category_id_column).getValue()).trim();
   const type = String(mcrSheet.getRange(row, cfg.type_column).getValue()).trim().toLowerCase();
-  const name = String(mcrSheet.getRange(row, cfg.name_column).getValue()).trim();
+  const name = String(mcrSheet.getRange(row, cfg.category_name_column).getValue()).trim();
   const activeStatus = String(mcrSheet.getRange(row, cfg.active_status_column).getValue()).trim().toLowerCase();
   const formOrder = Number(mcrSheet.getRange(row, cfg.form_order_column).getValue());
 

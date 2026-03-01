@@ -1,11 +1,12 @@
 import { getLastRowofTable_ } from "../../shared/getLastRowofTable";
 
-export function parseMCRTable(mcrSheet,mcrCfgObj) {
+export function parseMCRTable(ui, mcrSheet, mcrCfgObj) {
     
     const readyRows = [];
 
     try {
-        const startRowPos = mcrCfgObj.mcr_table_start_row;
+        const startRowPos = mcrCfgObj.table_start_row;
+        const status_column_id = mcrCfgObj.mcr_status_column;
         const lastRowPos = getLastRowofTable_(mcrSheet,mcrCfgObj);
 
         //If table has no entries, abort
@@ -13,7 +14,7 @@ export function parseMCRTable(mcrSheet,mcrCfgObj) {
 
         console.log(`last Row POS ${lastRowPos}`)
         // Grab Status Values from Status Column
-        const statusCells = mcrSheet.getRange(startRowPos, mcrCfgObj.mcr_status_column, lastRowPos-startRowPos+1, 1);
+        const statusCells = mcrSheet.getRange(startRowPos, status_column_id, lastRowPos-startRowPos+1, 1);
         const statusValues = statusCells.getValues();
 
         statusValues.forEach(

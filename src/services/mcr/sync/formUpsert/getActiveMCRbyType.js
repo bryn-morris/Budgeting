@@ -3,7 +3,7 @@ import { getLastRowofTable_ } from "../../shared/getLastRowofTable";
 
 export function getActiveMcrByType_(ss, mcrSheet, cfg) {
 
-  const startRow = cfg.mcr_table_start_row;
+  const startRow = cfg.table_start_row;
   const lastRow = getLastRowofTable_(mcrSheet,cfg);
   const out = { recurring: [], variable: [], pool: [], income: [] };
 
@@ -20,9 +20,9 @@ export function getActiveMcrByType_(ss, mcrSheet, cfg) {
     .getRange(startRow, cfg.mcr_line_start, lastRow - startRow + 1, width)
     .getValues();
 
-  const idxId = cfg.id_column - cfg.mcr_line_start;
+  const idxId = cfg.category_id_column - cfg.mcr_line_start;
   const idxType = cfg.type_column - cfg.mcr_line_start;
-  const idxName = cfg.name_column - cfg.mcr_line_start;
+  const idxName = cfg.category_name_column - cfg.mcr_line_start;
   const idxOrder = cfg.form_order_column - cfg.mcr_line_start;
   const idxActive = cfg.active_status_column - cfg.mcr_line_start;
 

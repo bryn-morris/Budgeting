@@ -12,7 +12,7 @@ export function mcrMarkStatus(e) {
   if(!config_key || config_key.mcr_line_start == null || config_key.mcr_line_end == null) return;
 
   // Make sure range is after table start
-  if (row < config_key.mcr_table_start_row) return;
+  if (row < config_key.table_start_row) return;
 
   // Make sure updates are in the acceptable range
   const colStart = e.range.getColumn();

@@ -3,7 +3,7 @@ import { getLastRowofTable_ } from "../shared/getLastRowofTable";
 
 export function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
 
-  const startRow = mcrConfig.mcr_table_start_row;
+  const startRow = mcrConfig.table_start_row;
   const lastRow = getLastRowofTable_(mcrSheet, mcrConfig);
 
   const validIDObj = {
@@ -20,7 +20,7 @@ export function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
   for (let r = startRow; r <= lastRow; r++) {
 
     const id = String(
-      mcrSheet.getRange(r, mcrConfig.id_column).getValue()
+      mcrSheet.getRange(r, mcrConfig.category_id_column).getValue()
     ).trim();
 
     if (!id) continue;

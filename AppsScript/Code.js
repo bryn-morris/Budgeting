@@ -38,10 +38,10 @@
         tab_name: "Recurring Payments (Fixed Monthly Expenses)",
         watch_column: 6,
         table_start_row: 7,
-        autopay_column: 8,
         date_set_column: 10,
         category_id_column: 3,
-        category_name_column: 4
+        category_name_column: 4,
+        autopay_column: 8
       },
       "Variable Payments (Variable Monthly Expenses)": {
         tab_name: "Variable Payments (Variable Monthly Expenses)",
@@ -53,13 +53,15 @@
       },
       "Master Category Registry": {
         tab_name: "Master Category Registry",
+        watch_column: "",
+        table_start_row: 5,
+        date_set_column: "",
+        category_id_column: 3,
+        category_name_column: 5,
         mcr_line_start: 3,
         mcr_line_end: 7,
-        mcr_table_start_row: 5,
         mcr_status_column: 9,
-        id_column: 3,
         type_column: 4,
-        name_column: 5,
         form_order_column: 6,
         active_status_column: 7
       },
@@ -99,7 +101,7 @@
     const config_key = CONFIG_OBJECT2.sheets[edited_sheet.getName()];
     const row = e.range.getRow();
     if (!config_key || config_key.mcr_line_start == null || config_key.mcr_line_end == null) return;
-    if (row < config_key.mcr_table_start_row) return;
+    if (row < config_key.table_start_row) return;
     const colStart = e.range.getColumn();
     const colEnd = colStart + e.range.getNumColumns() - 1;
     const acceptableRange = !(colEnd < config_key.mcr_line_start || colStart > config_key.mcr_line_end);
@@ -130,9 +132,9 @@
 
   // src/services/mcr/sync/sheetUpdate/parseMCRLine.js
   function parseMCRLine_(mcrSheet, row, cfg) {
-    const id = String(mcrSheet.getRange(row, cfg.id_column).getValue()).trim();
+    const id = String(mcrSheet.getRange(row, cfg.category_id_column).getValue()).trim();
     const type = String(mcrSheet.getRange(row, cfg.type_column).getValue()).trim().toLowerCase();
-    const name = String(mcrSheet.getRange(row, cfg.name_column).getValue()).trim();
+    const name = String(mcrSheet.getRange(row, cfg.category_name_column).getValue()).trim();
     const activeStatus = String(mcrSheet.getRange(row, cfg.active_status_column).getValue()).trim().toLowerCase();
     const formOrder = Number(mcrSheet.getRange(row, cfg.form_order_column).getValue());
     if (activeStatus !== "Y") return null;
@@ -276,7 +278,7 @@
 
   // src/services/mcr/cleanup/getValidIDSetByMCRType.js
   function getValidIDSetByMCRType_(mcrSheet, mcrConfig) {
-    const startRow = mcrConfig.mcr_table_start_row;
+    const startRow = mcrConfig.table_start_row;
     const lastRow = getLastRowofTable_(mcrSheet, mcrConfig);
     const validIDObj = {
       recurring: /* @__PURE__ */ new Set(),
@@ -289,7 +291,7 @@
     }
     for (let r = startRow; r <= lastRow; r++) {
       const id = String(
-        mcrSheet.getRange(r, mcrConfig.id_column).getValue()
+        mcrSheet.getRange(r, mcrConfig.category_id_column).getValue()
       ).trim();
       if (!id) continue;
       const active = String(
@@ -336,14 +338,15 @@
   }
 
   // src/services/mcr/sync/sheetUpdate/parseMCRTable.js
-  function parseMCRTable(mcrSheet, mcrCfgObj) {
+  function parseMCRTable(ui, mcrSheet, mcrCfgObj) {
     const readyRows = [];
     try {
-      const startRowPos = mcrCfgObj.mcr_table_start_row;
+      const startRowPos = mcrCfgObj.table_start_row;
+      const status_column_id = mcrCfgObj.mcr_status_column;
       const lastRowPos = getLastRowofTable_(mcrSheet, mcrCfgObj);
       if (lastRowPos < startRowPos) return;
       console.log(`last Row POS ${lastRowPos}`);
-      const statusCells = mcrSheet.getRange(startRowPos, mcrCfgObj.mcr_status_column, lastRowPos - startRowPos + 1, 1);
+      const statusCells = mcrSheet.getRange(startRowPos, status_column_id, lastRowPos - startRowPos + 1, 1);
       const statusValues = statusCells.getValues();
       statusValues.forEach(
         (r, i) => {
@@ -384,7 +387,7 @@ ${err.message}`);
 
   // src/services/mcr/sync/formUpsert/getActiveMCRbyType.js
   function getActiveMcrByType_(ss, mcrSheet, cfg) {
-    const startRow = cfg.mcr_table_start_row;
+    const startRow = cfg.table_start_row;
     const lastRow = getLastRowofTable_(mcrSheet, cfg);
     const out = { recurring: [], variable: [], pool: [], income: [] };
     if (lastRow < startRow) return out;
@@ -392,9 +395,9 @@ ${err.message}`);
     const autopayById = recurringCfg ? buildRecurringAutopayIndex_(ss, recurringCfg) : /* @__PURE__ */ new Map();
     const width = cfg.mcr_line_end - cfg.mcr_line_start + 1;
     const rows = mcrSheet.getRange(startRow, cfg.mcr_line_start, lastRow - startRow + 1, width).getValues();
-    const idxId = cfg.id_column - cfg.mcr_line_start;
+    const idxId = cfg.category_id_column - cfg.mcr_line_start;
     const idxType = cfg.type_column - cfg.mcr_line_start;
-    const idxName = cfg.name_column - cfg.mcr_line_start;
+    const idxName = cfg.category_name_column - cfg.mcr_line_start;
     const idxOrder = cfg.form_order_column - cfg.mcr_line_start;
     const idxActive = cfg.active_status_column - cfg.mcr_line_start;
     rows.forEach((r) => {
@@ -499,7 +502,7 @@ ${err.message}`);
   }
 
   // src/services/mcr/sync/formUpsert/syncMCRRowsToForm.js
-  function syncMRCRowsToForm(ss, ui2, mcrSheet, mcrCfgObj) {
+  function syncMRCRowsToForm(ss, ui, mcrSheet, mcrCfgObj) {
     const formCfg = CONFIG_OBJECT.form;
     const ids = formCfg.dropdown_ids;
     const form = FormApp.openById(formCfg.form_id);
@@ -514,7 +517,7 @@ ${err.message}`);
       setDropdownChoicesByItemId(form, ids.expense_pools_category, poolsCatArray);
       setDropdownChoicesByItemId(form, ids.pool_funding_category, poolsCatArray);
     } catch (err) {
-      ui2.alert(`Form Category Sync failed.
+      ui.alert(`Form Category Sync failed.
 ${err.message}`);
       throw err;
     }
@@ -524,19 +527,19 @@ ${err.message}`);
   // src/services/mcr/sync/syncMCR.js
   function syncMCR() {
     const ss = SpreadsheetApp.getActive();
-    const ui2 = SpreadsheetApp.getUi();
+    const ui = SpreadsheetApp.getUi();
     const mcrSheet = ss.getSheetByName("Master Category Registry");
     const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
     try {
-      const readyRows = parseMCRTable(mcrSheet, mcrCfgObj);
+      const readyRows = parseMCRTable(ui, mcrSheet, mcrCfgObj);
       console.log(`Ready Rows Variable from MCR ${readyRows}`);
       const processedRows = syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows);
-      syncMRCRowsToForm(ss, ui2, mcrSheet, mcrCfgObj);
+      syncMRCRowsToForm(ss, ui, mcrSheet, mcrCfgObj);
       cleanupMCRSync(ss, mcrCfgObj, mcrSheet);
       SpreadsheetApp.getUi().alert(`Sync complete.
 Processed: ${processedRows.length}`);
     } catch (err) {
-      ui2.alert(`Sync failed.
+      ui.alert(`Sync failed.
 ${err.message}`);
       throw err;
     }
