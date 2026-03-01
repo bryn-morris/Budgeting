@@ -30,7 +30,7 @@ export function mcrMarkStatus(e) {
   }
 
   // If row is listed as inactive, mark inactive
-  const activeRaw = String(sheet.getRange(row, cfg.active_status_column).getValue()).trim().toUpperCase();
+  const activeRaw = String(edited_sheet.getRange(row, config_key.active_status_column).getValue()).trim().toUpperCase();
   if (activeRaw !== "Y") {
     statusCell.setValue("INACTIVE");
     return;

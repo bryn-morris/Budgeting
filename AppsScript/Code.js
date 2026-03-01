@@ -63,16 +63,16 @@
   };
 
   // src/services/mcr/status/isMCRRowEmpty.js
-  function isMcrRowEmpty_(sheet2, row, cfg2) {
-    const width = cfg2.mcr_line_end - cfg2.mcr_line_start + 1;
-    const values = sheet2.getRange(row, cfg2.mcr_line_start, 1, width).getValues()[0];
+  function isMcrRowEmpty_(sheet, row, cfg) {
+    const width = cfg.mcr_line_end - cfg.mcr_line_start + 1;
+    const values = sheet.getRange(row, cfg.mcr_line_start, 1, width).getValues()[0];
     return values.every((v) => String(v).trim() === "");
   }
 
   // src/services/mcr/shared/isMCRRowComplete.js
-  function isMCRRowComplete_(sheet2, row, config_key) {
+  function isMCRRowComplete_(sheet, row, config_key) {
     const width = config_key.mcr_line_end - config_key.mcr_line_start + 1;
-    const values = sheet2.getRange(row, config_key.mcr_line_start, 1, width).getValues()[0];
+    const values = sheet.getRange(row, config_key.mcr_line_start, 1, width).getValues()[0];
     return values.every((v) => String(v).trim() !== "");
   }
 
@@ -92,7 +92,7 @@
       statusCell.setValue("");
       return;
     }
-    const activeRaw = String(sheet.getRange(row, cfg.active_status_column).getValue()).trim().toUpperCase();
+    const activeRaw = String(edited_sheet.getRange(row, config_key.active_status_column).getValue()).trim().toUpperCase();
     if (activeRaw !== "Y") {
       statusCell.setValue("INACTIVE");
       return;
@@ -112,12 +112,12 @@
   }
 
   // src/services/mcr/sync/sheetUpdate/parseMCRLine.js
-  function parseMCRLine_(mcrSheet, row, cfg2) {
-    const id = String(mcrSheet.getRange(row, cfg2.id_column).getValue()).trim();
-    const type = String(mcrSheet.getRange(row, cfg2.type_column).getValue()).trim().toLowerCase();
-    const name = String(mcrSheet.getRange(row, cfg2.name_column).getValue()).trim();
-    const activeStatus = String(mcrSheet.getRange(row, cfg2.active_status_column).getValue()).trim().toLowerCase();
-    const formOrder = Number(mcrSheet.getRange(row, cfg2.form_order_column).getValue());
+  function parseMCRLine_(mcrSheet, row, cfg) {
+    const id = String(mcrSheet.getRange(row, cfg.id_column).getValue()).trim();
+    const type = String(mcrSheet.getRange(row, cfg.type_column).getValue()).trim().toLowerCase();
+    const name = String(mcrSheet.getRange(row, cfg.name_column).getValue()).trim();
+    const activeStatus = String(mcrSheet.getRange(row, cfg.active_status_column).getValue()).trim().toLowerCase();
+    const formOrder = Number(mcrSheet.getRange(row, cfg.form_order_column).getValue());
     if (activeStatus !== "Y") return null;
     if (!id) throw new Error(`MCR row ${row}: missing ID`);
     if (!type) throw new Error(`MCR row ${row}: missing Type`);
@@ -127,37 +127,37 @@
 
   // src/services/mcr/sync/sheetUpdate/upsertMCRLine.js
   function upsertMCRLine_(ss2, targetSheetName, targetCfg, upsertData) {
-    const sheet2 = ss2.getSheetByName(targetSheetName);
+    const sheet = ss2.getSheetByName(targetSheetName);
     const target_id_col = targetCfg.category_id_column;
     const target_name_col = targetCfg.category_name_column;
     const target_start_row = targetCfg.table_start_row;
-    const target_last_row = sheet2.getLastRow();
+    const target_last_row = sheet.getLastRow();
     const numRows2 = Math.max(0, target_last_row - target_start_row + 1);
     let existingRow = null;
     if (numRows2 > 0) {
-      const ids = sheet2.getRange(target_start_row, target_id_col, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+      const ids = sheet.getRange(target_start_row, target_id_col, numRows2, 1).getValues().map((r) => String(r[0]).trim());
       const idx = ids.indexOf(upsertData.id);
       if (idx !== -1) existingRow = target_start_row + idx;
     }
     if (existingRow) {
-      sheet2.getRange(existingRow, target_name_col).setValue(upsertData.name);
+      sheet.getRange(existingRow, target_name_col).setValue(upsertData.name);
     } else {
-      const newRow = sheet2.getLastRow() + 1;
-      sheet2.getRange(newRow, target_id_col).setValue(upsertData.id);
-      sheet2.getRange(newRow, target_name_col).setValue(upsertData.name);
+      const newRow = sheet.getLastRow() + 1;
+      sheet.getRange(newRow, target_id_col).setValue(upsertData.id);
+      sheet.getRange(newRow, target_name_col).setValue(upsertData.name);
     }
   }
 
   // src/services/mcr/shared/findPoolsTotalEndRow.js
-  function findPoolsTotalEndRow_(sheet2, cfg2) {
-    const startRow = cfg2.table_start_row;
-    const idCol = cfg2.category_id_column;
-    const nameCol = cfg2.category_name_column;
-    const lastRow = sheet2.getLastRow();
+  function findPoolsTotalEndRow_(sheet, cfg) {
+    const startRow = cfg.table_start_row;
+    const idCol = cfg.category_id_column;
+    const nameCol = cfg.category_name_column;
+    const lastRow = sheet.getLastRow();
     if (lastRow < startRow) return startRow - 1;
     const numRows2 = lastRow - startRow + 1;
-    const ids = sheet2.getRange(startRow, idCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
-    const names = sheet2.getRange(startRow, nameCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+    const ids = sheet.getRange(startRow, idCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+    const names = sheet.getRange(startRow, nameCol, numRows2, 1).getValues().map((r) => String(r[0]).trim());
     let lastDataOffset = -1;
     let blankStreak = 0;
     const BLANK_STREAK_TO_STOP = 3;
@@ -179,22 +179,22 @@
 
   // src/services/mcr/sync/sheetUpdate/upsertPoolTotalRow.js
   function upsertPoolTotalRow_(ss2, poolsSheetName, poolsCfg, entry) {
-    const sheet2 = ss2.getSheetByName(poolsSheetName);
-    if (!sheet2) throw new Error(`Pools sheet not found: ${poolsSheetName}`);
+    const sheet = ss2.getSheetByName(poolsSheetName);
+    if (!sheet) throw new Error(`Pools sheet not found: ${poolsSheetName}`);
     const idCol = poolsCfg.category_id_column;
     const nameCol = poolsCfg.category_name_column;
     const startRow = poolsCfg.table_start_row;
-    const endRow = findPoolsTotalEndRow_(sheet2, poolsCfg);
+    const endRow = findPoolsTotalEndRow_(sheet, poolsCfg);
     let ids = [];
     let names = [];
     if (numRows > 0) {
-      ids = sheet2.getRange(startRow, idCol, numRows, 1).getValues().map((r) => String(r[0]).trim());
-      names = sheet2.getRange(startRow, nameCol, numRows, 1).getValues().map((r) => String(r[0]).trim());
+      ids = sheet.getRange(startRow, idCol, numRows, 1).getValues().map((r) => String(r[0]).trim());
+      names = sheet.getRange(startRow, nameCol, numRows, 1).getValues().map((r) => String(r[0]).trim());
     }
     const idx = ids.indexOf(entry.id);
     if (idx !== -1) {
       const existingRow = startRow + idx;
-      sheet2.getRange(existingRow, nameCol).setValue(entry.name);
+      sheet.getRange(existingRow, nameCol).setValue(entry.name);
       return;
     }
     let insertOffset = -1;
@@ -206,13 +206,13 @@
     }
     if (insertOffset !== -1) {
       const row = startRow + insertOffset;
-      sheet2.getRange(row, idCol).setValue(entry.id);
-      sheet2.getRange(row, nameCol).setValue(entry.name);
+      sheet.getRange(row, idCol).setValue(entry.id);
+      sheet.getRange(row, nameCol).setValue(entry.name);
     } else {
       const row = endRow >= startRow ? endRow + 1 : startRow;
-      if (endRow >= startRow) sheet2.insertRowAfter(endRow);
-      sheet2.getRange(row, idCol).setValue(entry.id);
-      sheet2.getRange(row, nameCol).setValue(entry.name);
+      if (endRow >= startRow) sheet.insertRowAfter(endRow);
+      sheet.getRange(row, idCol).setValue(entry.id);
+      sheet.getRange(row, nameCol).setValue(entry.name);
     }
   }
 
