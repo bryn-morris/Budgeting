@@ -17,8 +17,13 @@
   // src/config/config.js
   var CONFIG_OBJECT2 = {
     sheets: {
-      "": {
-        tab_name: ""
+      "Income Review": {
+        tab_name: "Income Review",
+        watch_column: 4,
+        table_start_row: 7,
+        date_set_column: 5,
+        category_id_column: 2,
+        category_name_column: 3
       },
       "Recurring Payments (Fixed Monthly Expenses)": {
         tab_name: "Recurring Payments (Fixed Monthly Expenses)",
@@ -58,7 +63,8 @@
     category_mapping: {
       pool: "Pools (Budgeted Non-Monthly Expenses)",
       recurring: "Recurring Payments (Fixed Monthly Expenses)",
-      variable: "Variable Payments (Variable Monthly Expenses)"
+      variable: "Variable Payments (Variable Monthly Expenses)",
+      income: "Income Review"
     }
   };
 
