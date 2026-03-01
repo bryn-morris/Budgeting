@@ -19,7 +19,7 @@ export function cleanupMCRSync(
   let deletedEntries = 0;
 
   // --- Income ---
-  const incomeConfig = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.variable];
+  const incomeConfig = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.income];
   const incomeSheet = ss.getSheetByName(incomeConfig.tab_name);
   deletedEntries += cleanupTargetTable_(incomeSheet, validIncomeIds);
 

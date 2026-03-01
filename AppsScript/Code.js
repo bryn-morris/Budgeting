@@ -328,7 +328,7 @@
       income: validIncomeIds
     } = getValidIDSetByMCRType_(mcrSheet, mcrConfig);
     let deletedEntries = 0;
-    const incomeConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.variable];
+    const incomeConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.income];
     const incomeSheet = ss.getSheetByName(incomeConfig.tab_name);
     deletedEntries += cleanupTargetTable_(incomeSheet, validIncomeIds);
     const recurringConfig = CONFIG_OBJECT2.sheets[CONFIG_OBJECT2.category_mapping.recurring];
