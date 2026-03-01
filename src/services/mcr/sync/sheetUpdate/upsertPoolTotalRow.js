@@ -7,7 +7,8 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   const idCol = poolsCfg.category_id_column;
   const nameCol = poolsCfg.category_name_column;
   const startRow = poolsCfg.table_start_row; // 4
-
+  const lastRow = getLastRowofTable_(sheet,poolsCfg);
+  const numRows = Math.max(0, lastRow - startRow + 1);
   const endRow = getLastRowofTable_(sheet, poolsCfg);
 
   // Read existing IDs/names only within the top Pools Total table

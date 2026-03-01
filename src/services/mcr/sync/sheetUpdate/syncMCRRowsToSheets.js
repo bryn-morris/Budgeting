@@ -16,12 +16,12 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
       if (!entry) continue;
 
       const targetSheetName = CONFIG_OBJECT.category_mapping[entry.type];
+
       const targetCfg = CONFIG_OBJECT.sheets[targetSheetName];
 
       if (!targetSheetName) {
         throw new Error(`MCR row ${row}: unknown type "${entry.type}"`);
       }
-
 
       if (entry.type === "pool") {
         upsertPoolTotalRow_(ss, targetSheetName, targetCfg, entry);

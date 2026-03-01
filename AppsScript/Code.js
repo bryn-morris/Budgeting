@@ -6,8 +6,8 @@
     if (!config_key || config_key.table_start_row == null || config_key.watch_column == null) return;
     const row = e.range.getRow();
     const col = config_key.date_set_column;
-    const numRows2 = e.range.getNumRows();
-    edited_sheet.getRange(row, col, numRows2, 1).setValue(Utilities.formatDate(
+    const numRows = e.range.getNumRows();
+    edited_sheet.getRange(row, col, numRows, 1).setValue(Utilities.formatDate(
       /* @__PURE__ */ new Date(),
       Session.getScriptTimeZone(),
       "yyyy-MM-dd"
@@ -137,7 +137,7 @@
     const name = String(mcrSheet.getRange(row, cfg.category_name_column).getValue()).trim();
     const activeStatus = String(mcrSheet.getRange(row, cfg.active_status_column).getValue()).trim().toLowerCase();
     const formOrder = Number(mcrSheet.getRange(row, cfg.form_order_column).getValue());
-    if (activeStatus !== "Y") return null;
+    if (activeStatus !== "y") return null;
     if (!id) throw new Error(`MCR row ${row}: missing ID`);
     if (!type) throw new Error(`MCR row ${row}: missing Type`);
     if (!name) throw new Error(`MCR row ${row}: missing Name`);
@@ -149,7 +149,7 @@
     const startRow = targetConfig.table_start_row;
     const idCol = targetConfig.category_id_column;
     const capLast = sheet.getLastRow();
-    if (capLast < startRow) return { lastRow: startRow - 1, numRows: 0 };
+    if (capLast < startRow) return startRow - 1;
     const idVals = sheet.getRange(startRow, idCol, capLast - startRow + 1, 1).getValues();
     let count = 0;
     for (let i = 0; i < idVals.length; i++) {
@@ -168,17 +168,17 @@
     const target_name_col = targetCfg.category_name_column;
     const target_start_row = targetCfg.table_start_row;
     const target_last_row = getLastRowofTable_(sheet, targetCfg);
-    const numRows2 = Math.max(0, target_last_row - target_start_row + 1);
+    const numRows = Math.max(0, target_last_row - target_start_row + 1);
     let existingRow = null;
-    if (numRows2 > 0) {
-      const ids = sheet.getRange(target_start_row, target_id_col, numRows2, 1).getValues().map((r) => String(r[0]).trim());
+    if (numRows > 0) {
+      const ids = sheet.getRange(target_start_row, target_id_col, numRows, 1).getValues().map((r) => String(r[0]).trim());
       const idx = ids.indexOf(upsertData.id);
       if (idx !== -1) existingRow = target_start_row + idx;
     }
     if (existingRow) {
       sheet.getRange(existingRow, target_name_col).setValue(upsertData.name);
     } else {
-      const newRow = sheet.getLastRowofTable_(sheet, targetCfg) + 1;
+      const newRow = getLastRowofTable_(sheet, targetCfg) + 1;
       sheet.getRange(newRow, target_id_col).setValue(upsertData.id);
       sheet.getRange(newRow, target_name_col).setValue(upsertData.name);
     }
@@ -191,6 +191,8 @@
     const idCol = poolsCfg.category_id_column;
     const nameCol = poolsCfg.category_name_column;
     const startRow = poolsCfg.table_start_row;
+    const lastRow = getLastRowofTable_(sheet, poolsCfg);
+    const numRows = Math.max(0, lastRow - startRow + 1);
     const endRow = getLastRowofTable_(sheet, poolsCfg);
     let ids = [];
     let names = [];
@@ -258,9 +260,9 @@
     const startRow = targetConfig.table_start_row;
     const lastRow = getLastRowofTable_(targetSheet, targetConfig);
     const idCol = targetConfig.category_id_column;
-    const numRows2 = Math.max(0, lastRow - startRow + 1);
-    if (numRows2 === 0) return 0;
-    const rawTargetSheetIds = targetSheet.getRange(startRow, idCol, numRows2, 1).getValues();
+    const numRows = Math.max(0, lastRow - startRow + 1);
+    if (numRows === 0) return 0;
+    const rawTargetSheetIds = targetSheet.getRange(startRow, idCol, numRows, 1).getValues();
     const normalizedTargetIDs = rawTargetSheetIds.map(
       (r) => String(r[0]).trim()
     );
@@ -371,11 +373,11 @@ ${err.message}`);
     const startRow = recurringCfg.table_start_row;
     const lastRow = getLastRowofTable_(sheet, recurringCfg);
     if (lastRow < startRow) return /* @__PURE__ */ new Map();
-    const numRows2 = lastRow - startRow + 1;
-    const idVals = sheet.getRange(startRow, recurringCfg.category_id_column, numRows2, 1).getValues();
-    const apVals = sheet.getRange(startRow, recurringCfg.autopay_column, numRows2, 1).getValues();
+    const numRows = lastRow - startRow + 1;
+    const idVals = sheet.getRange(startRow, recurringCfg.category_id_column, numRows, 1).getValues();
+    const apVals = sheet.getRange(startRow, recurringCfg.autopay_column, numRows, 1).getValues();
     const idx = /* @__PURE__ */ new Map();
-    for (let i = 0; i < numRows2; i++) {
+    for (let i = 0; i < numRows; i++) {
       const id = String(idVals[i][0] ?? "").trim();
       if (!id) continue;
       const autopay = String(apVals[i][0] ?? "").trim().toUpperCase() === "Y";
@@ -439,11 +441,11 @@ ${err.message}`);
     if (!lastRow || lastRow < startRow) {
       return /* @__PURE__ */ new Map();
     }
-    const numRows2 = lastRow - startRow + 1;
-    const ids = sheet.getRange(startRow, cfg.category_id_column, numRows2, 1).getDisplayValues().map((r) => String(r[0]).trim());
-    const balances = sheet.getRange(startRow, cfg.current_balance, numRows2, 1).getDisplayValues().map((r) => String(r[0]).trim());
+    const numRows = lastRow - startRow + 1;
+    const ids = sheet.getRange(startRow, cfg.category_id_column, numRows, 1).getDisplayValues().map((r) => String(r[0]).trim());
+    const balances = sheet.getRange(startRow, cfg.current_balance, numRows, 1).getDisplayValues().map((r) => String(r[0]).trim());
     const map = /* @__PURE__ */ new Map();
-    for (let i = 0; i < numRows2; i++) {
+    for (let i = 0; i < numRows; i++) {
       const id = ids[i];
       const bal = balances[i];
       if (!id) continue;

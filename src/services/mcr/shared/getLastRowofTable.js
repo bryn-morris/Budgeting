@@ -4,7 +4,7 @@ const startRow = targetConfig.table_start_row;
 const idCol = targetConfig.category_id_column;
 
 const capLast = sheet.getLastRow(); // just an upper bound
-  if (capLast < startRow) return { lastRow: startRow - 1, numRows: 0 };
+  if (capLast < startRow) return startRow - 1;
 
   const idVals = sheet.getRange(startRow, idCol, capLast - startRow + 1, 1).getValues();
 

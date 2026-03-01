@@ -6,7 +6,7 @@ export function parseMCRLine_(mcrSheet, row, cfg) {
   const activeStatus = String(mcrSheet.getRange(row, cfg.active_status_column).getValue()).trim().toLowerCase();
   const formOrder = Number(mcrSheet.getRange(row, cfg.form_order_column).getValue());
 
-  if (activeStatus !== "Y") return null;
+  if (activeStatus !== "y") return null;
   
   if (!id) throw new Error(`MCR row ${row}: missing ID`);
   if (!type) throw new Error(`MCR row ${row}: missing Type`);

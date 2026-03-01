@@ -25,7 +25,7 @@ export function upsertMCRLine_(ss, targetSheetName, targetCfg, upsertData) {
   if (existingRow) {
     sheet.getRange(existingRow, target_name_col).setValue(upsertData.name);
   } else {
-    const newRow = sheet.getLastRowofTable_(sheet, targetCfg) + 1;
+    const newRow = getLastRowofTable_(sheet, targetCfg) + 1;
     sheet.getRange(newRow, target_id_col).setValue(upsertData.id);
     sheet.getRange(newRow, target_name_col).setValue(upsertData.name);
   }

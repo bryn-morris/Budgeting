@@ -9,7 +9,6 @@ export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
 
   const lastRow = getLastRowofTable_(targetSheet,targetConfig);
 
-
   const idCol = targetConfig.category_id_column;
   const numRows = Math.max(0, lastRow - startRow + 1);
 
