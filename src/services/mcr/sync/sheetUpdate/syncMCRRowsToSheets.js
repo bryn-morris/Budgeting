@@ -1,9 +1,10 @@
 import { parseMCRLine_ } from "./parseMCRLine.js";
-import { CONFIG_OBJECT } from "../../../config/config.js";
+import { CONFIG_OBJECT } from "../../../../config/config.js";
 import { upsertMCRLine_ } from "./upsertMCRLine.js";
-import { upsertPoolTotalRow_ } from "./upsetPoolTotalRow.js"
+import { upsertPoolTotalRow_ } from "./upsertPoolTotalRow.js"
 
 export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
+  
   const processedRows = [];
   
   try {
@@ -35,8 +36,6 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
     processedRows.forEach(r => {
       mcrSheet.getRange(r, mcrCfgObj.mcr_status_column).setValue("DONE");
     });
-
-    SpreadsheetApp.getUi().alert(`Sync complete.\nProcessed: ${processedRows.length}`);
   
     return processedRows;
 

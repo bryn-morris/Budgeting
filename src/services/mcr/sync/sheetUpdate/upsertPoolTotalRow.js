@@ -1,4 +1,4 @@
-import { findPoolsTotalEndRow_ } from "../shared/findPoolsTotalEndRow";
+import { findPoolsTotalEndRow_ } from "../../shared/findPoolsTotalEndRow";
 
 export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   const sheet = ss.getSheetByName(poolsSheetName);

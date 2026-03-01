@@ -1,5 +1,8 @@
 export const CONFIG_OBJECT = {
   sheets: {
+    '' : {
+      tab_name: '',
+    },
     'Recurring Payments (Fixed Monthly Expenses)':{
       tab_name: 'Recurring Payments (Fixed Monthly Expenses)',
       watch_column: 6,

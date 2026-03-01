@@ -17,6 +17,9 @@
   // src/config/config.js
   var CONFIG_OBJECT2 = {
     sheets: {
+      "": {
+        tab_name: ""
+      },
       "Recurring Payments (Fixed Monthly Expenses)": {
         tab_name: "Recurring Payments (Fixed Monthly Expenses)",
         watch_column: 6,
@@ -108,7 +111,7 @@
     mcrMarkStatus(e);
   }
 
-  // src/services/mcr/sync/parseMCRLine.js
+  // src/services/mcr/sync/sheetUpdate/parseMCRLine.js
   function parseMCRLine_(mcrSheet, row, cfg2) {
     const id = String(mcrSheet.getRange(row, cfg2.id_column).getValue()).trim();
     const type = String(mcrSheet.getRange(row, cfg2.type_column).getValue()).trim().toLowerCase();
@@ -122,7 +125,7 @@
     return { row, id, type, name, activeStatus, formOrder };
   }
 
-  // src/services/mcr/sync/upsertMCRLine.js
+  // src/services/mcr/sync/sheetUpdate/upsertMCRLine.js
   function upsertMCRLine_(ss2, targetSheetName, targetCfg, upsertData) {
     const sheet2 = ss2.getSheetByName(targetSheetName);
     const target_id_col = targetCfg.category_id_column;
@@ -174,7 +177,7 @@
     return startRow + lastDataOffset;
   }
 
-  // src/services/mcr/sync/upsetPoolTotalRow.js
+  // src/services/mcr/sync/sheetUpdate/upsertPoolTotalRow.js
   function upsertPoolTotalRow_(ss2, poolsSheetName, poolsCfg, entry) {
     const sheet2 = ss2.getSheetByName(poolsSheetName);
     if (!sheet2) throw new Error(`Pools sheet not found: ${poolsSheetName}`);
@@ -213,7 +216,7 @@
     }
   }
 
-  // src/services/mcr/sync/syncMCRRowsToSheets.js
+  // src/services/mcr/sync/sheetUpdate/syncMCRRowsToSheets.js
   function syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2) {
     const processedRows = [];
     try {
@@ -235,15 +238,13 @@
       processedRows.forEach((r) => {
         mcrSheet.getRange(r, mcrCfgObj.mcr_status_column).setValue("DONE");
       });
-      SpreadsheetApp.getUi().alert(`Sync complete.
-Processed: ${processedRows.length}`);
       return processedRows;
     } catch (err) {
       throw err;
     }
   }
 
-  // src/services/mcr/sync/parseMCRTable.js
+  // src/services/mcr/sync/sheetUpdate/parseMCRTable.js
   function parseMCRTable(mcrSheet, mcrCfgObj) {
     try {
       const startRowPos = mcrCfgObj.mcr_table_start_row;
@@ -276,7 +277,9 @@ ${err.message}`);
     const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
     try {
       const readyRows2 = parseMCRTable(mcrSheet, mcrCfgObj);
-      syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2);
+      const processedRows = syncMCRRowsToSheets_(ss2, mcrSheet, mcrCfgObj, readyRows2);
+      SpreadsheetApp.getUi().alert(`Sync complete.
+Processed: ${processedRows.length}`);
     } catch (err) {
       ui2.alert(`Sync failed.
 ${err.message}`);
@@ -290,6 +293,11 @@ ${err.message}`);
   }
 
   // src/main.js
-  globalThis.onEdit = onEdit;
-  globalThis.runMCRSync = runMCRSync;
+  globalThis._onEdit = function(e) {
+    return onEdit(e);
+  };
+  globalThis._runMCRSync = function(e) {
+    runMCRSync(e);
+  };
+  globalThis.CONFIG_OBJECT = CONFIG_OBJECT2;
 })();
