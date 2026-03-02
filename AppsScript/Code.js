@@ -41,7 +41,8 @@
         table_start_row: 7,
         date_set_column: 5,
         category_id_column: 2,
-        category_name_column: 3
+        category_name_column: 3,
+        table_end_column: 6
       },
       "Recurring Payments (Fixed Monthly Expenses)": {
         tab_name: "Recurring Payments (Fixed Monthly Expenses)",
@@ -50,6 +51,7 @@
         date_set_column: 10,
         category_id_column: 3,
         category_name_column: 4,
+        table_end_column: 11,
         autopay_column: 8
       },
       "Variable Payments (Variable Monthly Expenses)": {
@@ -58,7 +60,8 @@
         table_start_row: 7,
         date_set_column: 5,
         category_id_column: 2,
-        category_name_column: 3
+        category_name_column: 3,
+        table_end_column: 6
       },
       "Master Category Registry": {
         tab_name: "Master Category Registry",
@@ -67,6 +70,7 @@
         date_set_column: null,
         category_id_column: 3,
         category_name_column: 5,
+        table_end_column: 9,
         mcr_line_start: 3,
         mcr_line_end: 7,
         mcr_status_column: 9,
@@ -76,9 +80,12 @@
       },
       "Pools (Budgeted Non-Monthly Expenses)": {
         tab_name: "Pools (Budgeted Non-Monthly Expenses)",
+        watch_column: null,
         table_start_row: 4,
+        date_set_column: null,
         category_id_column: 2,
         category_name_column: 3,
+        table_end_column: 7,
         current_balance: 6
       }
     },
@@ -262,6 +269,67 @@
     }
   }
 
+  // src/services/mcr/shared/formatting/formatTable.js
+  function formatTable(sheet, cfg) {
+    const startRow = Number(cfg.table_start_row);
+    const lastRow = getLastRowofTable_(sheet, cfg);
+    const numRows = Math.max(0, lastRow - startRow + 1);
+    const startCol = Number(cfg.category_id_column);
+    const endCol = Number(cfg.table_end_column);
+    const numCols = endCol - startCol + 1;
+    if (!Number.isInteger(startRow) || startRow < 1) return;
+    if (!Number.isInteger(startCol) || startCol < 1) return;
+    if (!Number.isInteger(endCol) || endCol < startCol) return;
+    if (numCols <= 0) return;
+    const rowsToFormat = numRows === 0 ? 1 : numRows;
+    const tableRange = sheet.getRange(startRow, startCol, rowsToFormat, numCols);
+    tableRange.setBorder(false, false, false, false, false, false);
+    tableRange.setBorder(
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      null,
+      SpreadsheetApp.BorderStyle.SOLID
+    );
+    const firstRowRange = sheet.getRange(startRow, startCol, 1, numCols);
+    firstRowRange.setBorder(
+      true,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      SpreadsheetApp.BorderStyle.SOLID_MEDIUM
+    );
+    if (numRows > 0) {
+      const lastDataRowRange = sheet.getRange(lastRow, startCol, 1, numCols);
+      lastDataRowRange.setBorder(
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        SpreadsheetApp.BorderStyle.SOLID_MEDIUM
+      );
+    }
+    tableRange.setBorder(
+      null,
+      true,
+      null,
+      true,
+      null,
+      null,
+      null,
+      SpreadsheetApp.BorderStyle.SOLID_MEDIUM
+    );
+  }
+
   // src/services/mcr/cleanup/cleanupTargetTable.js
   function cleanupTargetTable_(targetSheet, targetValidIDSet) {
     const targetSheetName = targetSheet.getName();
@@ -284,6 +352,7 @@
         deletedRowsCount++;
       }
     }
+    formatTable(targetSheet, targetConfig);
     return deletedRowsCount;
   }
 

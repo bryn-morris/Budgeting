@@ -16,6 +16,7 @@ export const CONFIG_OBJECT = {
       date_set_column: 5,
       category_id_column: 2,
       category_name_column: 3,
+      table_end_column: 6,
     },
     'Recurring Payments (Fixed Monthly Expenses)':{
       tab_name: 'Recurring Payments (Fixed Monthly Expenses)',
@@ -24,6 +25,7 @@ export const CONFIG_OBJECT = {
       date_set_column: 10,
       category_id_column: 3,
       category_name_column: 4,
+      table_end_column: 11,
 
       autopay_column: 8,
     },
@@ -34,6 +36,7 @@ export const CONFIG_OBJECT = {
       date_set_column: 5,
       category_id_column: 2,
       category_name_column: 3,
+      table_end_column: 6,
     },
     'Master Category Registry':{
       tab_name: 'Master Category Registry',
@@ -42,6 +45,7 @@ export const CONFIG_OBJECT = {
       date_set_column: null,
       category_id_column: 3,
       category_name_column: 5,
+      table_end_column: 9,
 
       mcr_line_start: 3,
       mcr_line_end: 7,
@@ -52,9 +56,13 @@ export const CONFIG_OBJECT = {
     },
     'Pools (Budgeted Non-Monthly Expenses)':{
       tab_name: 'Pools (Budgeted Non-Monthly Expenses)',
-      table_start_row: 4,         
+      watch_column: null,
+      table_start_row: 4,
+      date_set_column: null,       
       category_id_column: 2,
       category_name_column: 3,
+      table_end_column:7,
+
       current_balance: 6,
     },
   },
