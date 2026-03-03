@@ -3,4 +3,5 @@ node_modules**
 .clasp.json
 ./src/config.js
 package-lock.json
-AppsScript/
+appsscript.json
+Code.js
