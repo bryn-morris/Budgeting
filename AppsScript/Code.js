@@ -1,5 +1,5 @@
 (() => {
-  // src/spreadsheet/dateUpdate.js
+  // src/spreadsheet/shared/dateUpdate.js
   function date_update(e) {
     const edited_sheet = e.range.getSheet();
     const config_key = CONFIG_OBJECT.sheets[edited_sheet.getName()];
@@ -624,8 +624,91 @@ ${err.message}`);
   }
 
   // src/triggers/runMCRSync.js
-  function runMCRSync() {
+  function runMCRSync(e) {
     syncMCR();
+  }
+
+  // src/spreadsheet/shared/tableDataValidation.js
+  function tableDataValidation(sheet, startRow, column, numsRows, rule) {
+    const targetRange = sheet.getRange(startRow, column, numsRows, 1);
+    targetRange.setDataValidation(rule);
+  }
+
+  // src/spreadsheet/MCR/generateUUIDs.js
+  function generateUUIDs(sheet, startRow, idCol, numRows) {
+    const idRange = sheet.getRange(startRow, idCol, numRows, 1);
+    const values = idRange.getValues();
+    for (let i = 0; i < values.length; i++) {
+      const currentidVal = values[i][0];
+      if (currentidVal) continue;
+      sheet.getRange(startRow + i, idCol).setValue(Utilities.getUuid());
+    }
+  }
+
+  // src/spreadsheet/MCR/getLastRowafterFirstBlank.js
+  function getLastRowafterFirstBlank(sheet, startRow, idCol) {
+    const capLast = sheet.getLastRow();
+    if (capLast < startRow) return startRow - 1;
+    const idVals = sheet.getRange(startRow, idCol, capLast - startRow + 1, 1).getValues();
+    let count = 0;
+    let skippedFirstBlank = false;
+    for (let i = 0; i < idVals.length; i++) {
+      const id = String(idVals[i][0] ?? "").trim();
+      if (!id) {
+        if (!skippedFirstBlank) {
+          skippedFirstBlank = true;
+          count++;
+          continue;
+        }
+        break;
+      }
+      count++;
+    }
+    const lastRow = startRow + count - 1;
+    return lastRow;
+  }
+
+  // src/spreadsheet/MCR/mcrSheetFormatting.js
+  function mcrSheetFormatting(e) {
+    if (!e || e.changeType !== "INSERT_ROW") return;
+    const ss = SpreadsheetApp.getActive();
+    const affectedSheetName = e.source.getActiveSheet().getName();
+    const mcrSheet = ss.getSheetByName("Master Category Registry");
+    const mcrCfgObj = CONFIG_OBJECT2.sheets["Master Category Registry"];
+    if (affectedSheetName !== mcrCfgObj.tab_name) return;
+    const startRow = mcrCfgObj.table_start_row;
+    const idCol = mcrCfgObj.category_id_column;
+    const typeCol = mcrCfgObj.type_column;
+    const actCol = mcrCfgObj.active_status_column;
+    const lastRow = getLastRowafterFirstBlank(mcrSheet, startRow, idCol);
+    const numRows = Math.max(0, lastRow - startRow + 1);
+    const typeRule = SpreadsheetApp.newDataValidation().requireValueInList(Object.keys(CONFIG_OBJECT2.category_mapping)).setAllowInvalid(false).build();
+    tableDataValidation(
+      mcrSheet,
+      startRow,
+      typeCol,
+      numRows,
+      typeRule
+    );
+    const activeRule = SpreadsheetApp.newDataValidation().requireValueInList(["Y", "N"]).setAllowInvalid(false).build();
+    tableDataValidation(
+      mcrSheet,
+      startRow,
+      actCol,
+      numRows,
+      activeRule
+    );
+    generateUUIDs(
+      mcrSheet,
+      startRow,
+      idCol,
+      numRows
+    );
+  }
+
+  // src/triggers/onAddMCRRow.js
+  function onAddMCRRow(e) {
+    mcrSheetFormatting(e);
   }
 
   // src/main.js
@@ -634,6 +717,9 @@ ${err.message}`);
   };
   globalThis._runMCRSync = function(e) {
     runMCRSync(e);
+  };
+  globalThis._onAddMCRRow = function(e) {
+    onAddMCRRow(e);
   };
   globalThis.CONFIG_OBJECT = CONFIG_OBJECT2;
 })();
