@@ -1,4 +1,5 @@
 import { getLastRowofTable_ } from "../getLastRowofTable";
+import { setTableFont } from "../../../../spreadsheet/shared/setTableFont";
 
 export function formatTable(sheet, cfg) {
   const startRow = Number(cfg.table_start_row);
@@ -9,13 +10,12 @@ export function formatTable(sheet, cfg) {
   const endCol = Number(cfg.table_end_column);
   const numCols = endCol - startCol + 1;
 
-  // ✅ Only bail if columns are invalid
   if (!Number.isInteger(startRow) || startRow < 1) return;
   if (!Number.isInteger(startCol) || startCol < 1) return;
   if (!Number.isInteger(endCol) || endCol < startCol) return;
   if (numCols <= 0) return;
 
-  // If table empty: still format one row so the top border exists visually
+  // If table empty: still format top border 
   const rowsToFormat = numRows === 0 ? 1 : numRows;
 
   const tableRange = sheet.getRange(startRow, startCol, rowsToFormat, numCols);
@@ -53,4 +53,6 @@ export function formatTable(sheet, cfg) {
     null,
     SpreadsheetApp.BorderStyle.SOLID_MEDIUM
   );
+
+  setTableFont(sheet, startRow, startCol, numRows, numCols);
 }
