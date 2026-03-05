@@ -36,8 +36,10 @@ export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
       deletedRowsCount++;
     }
   }
+  if (targetValidIDSet.length != 0) {
+      formatTable(targetSheet,targetConfig);
+  }
 
-  formatTable(targetSheet,targetConfig);
 
   return deletedRowsCount;
 }

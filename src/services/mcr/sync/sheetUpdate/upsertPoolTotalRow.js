@@ -36,16 +36,29 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
     }
   }
 
+  let targetRow;
+
   if (insertOffset !== -1) {
-    const row = startRow + insertOffset;
-    sheet.getRange(row, idCol).setValue(entry.id);
-    sheet.getRange(row, nameCol).setValue(entry.name);
+    targetRow = startRow + insertOffset;
   } else {
     // Extend the Pools Total table by inserting one row after its current end
-    const row = (endRow >= startRow) ? endRow + 1 : startRow;
+    targetRow = (endRow >= startRow) ? endRow + 1 : startRow;
     if (endRow >= startRow) sheet.insertRowAfter(endRow);
-
-    sheet.getRange(row, idCol).setValue(entry.id);
-    sheet.getRange(row, nameCol).setValue(entry.name);
   }
+
+  sheet.getRange(targetRow, idCol).setValue(entry.id);
+  sheet.getRange(targetRow, nameCol).setValue(entry.name);
+
+  // Merge cells C-D and F-G
+  sheet.getRange(targetRow, 3, 1, 2).breakApart().merge();
+  sheet.getRange(targetRow, 6, 1, 2).breakApart().merge();
+
+  // recalculate end row now that lines have been added
+  const reCalcEndRow = getLastRowofTable_(sheet,poolsCfg);
+  // freeze the row below the last row of the table
+
+  const frozenRow = (reCalcEndRow >= startRow) ? (reCalcEndRow +1) : startRow;
+
+  sheet.setFrozenRows(frozenRow)
+
 }
