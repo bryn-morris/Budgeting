@@ -19,7 +19,7 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
     names = sheet.getRange(startRow, nameCol, numRows, 1).getValues().map(r => String(r[0]).trim());
   }
 
-  // 1) If ID exists, update name
+  // If ID exists, update name
   const idx = ids.indexOf(entry.id);
   if (idx !== -1) {
     const existingRow = startRow + idx;
@@ -27,23 +27,25 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
     return;
   }
 
-  // 2) Otherwise insert into the first empty slot in the table, or extend it
-  let insertOffset = -1;
+  let insertOffset = -1
+  // If  no ID, and no name and table is not empty, insert into first empty table
   for (let i = 0; i < numRows; i++) {
-    if (!ids[i] && !names[i]) {
+    if (!ids[i] && !names[i] && endRow !== startRow) {
       insertOffset = i;
       break;
     }
   }
 
   let targetRow;
+  let appendedRow = false;
 
   if (insertOffset !== -1) {
+    //reusing empty row in table
     targetRow = startRow + insertOffset;
   } else {
-    // Extend the Pools Total table by inserting one row after its current end
+    // append into the spacer row (or StartRow if empty)
     targetRow = (endRow >= startRow) ? endRow + 1 : startRow;
-    if (endRow >= startRow) sheet.insertRowAfter(endRow);
+    appendedRow = true;
   }
 
   sheet.getRange(targetRow, idCol).setValue(entry.id);
@@ -52,6 +54,11 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   // Merge cells C-D and F-G
   sheet.getRange(targetRow, 3, 1, 2).breakApart().merge();
   sheet.getRange(targetRow, 6, 1, 2).breakApart().merge();
+
+  // if spacer row was used, insert another spacer row
+  if (appendedRow) {
+    sheet.insertRowAfter(targetRow);
+  }
 
   // recalculate end row now that lines have been added
   const reCalcEndRow = getLastRowofTable_(sheet,poolsCfg);

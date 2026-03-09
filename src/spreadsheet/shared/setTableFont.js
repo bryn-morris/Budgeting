@@ -2,6 +2,8 @@
 
 export function setTableFont (sheet, startRow, startCol, numRows, numCols) {
     
+    if(!numRows || numRows == 0) return;
+
     const tableRange = sheet.getRange(
         startRow,
         startCol,

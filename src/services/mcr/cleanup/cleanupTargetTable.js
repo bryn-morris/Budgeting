@@ -2,6 +2,7 @@ import { CONFIG_OBJECT } from "../../../config/config.js";
 import { formatTable } from "../shared/formatting/formatTable.js";
 import { getLastRowofTable_ } from "../shared/getLastRowofTable.js";
 
+
 export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
 
   const targetSheetName = targetSheet.getName();
@@ -36,10 +37,8 @@ export function cleanupTargetTable_(targetSheet, targetValidIDSet) {
       deletedRowsCount++;
     }
   }
-  if (targetValidIDSet.length != 0) {
-      formatTable(targetSheet,targetConfig);
-  }
 
+  formatTable(targetSheet,targetConfig);
 
   return deletedRowsCount;
 }
