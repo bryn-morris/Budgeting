@@ -3,7 +3,7 @@ import { CONFIG_OBJECT } from "../../../../config/config.js";
 import { upsertMCRLine_ } from "./upsertMCRLine.js";
 import { upsertPoolTotalRow_ } from "./upsertPoolTotalRow.js"
 
-export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
+export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows, idToFormOrderMapping) {
   
   const processedRows = [];
   
@@ -16,7 +16,6 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows) {
       if (!entry) continue;
 
       const targetSheetName = CONFIG_OBJECT.category_mapping[entry.type];
-
       const targetCfg = CONFIG_OBJECT.sheets[targetSheetName];
 
       if (!targetSheetName) {

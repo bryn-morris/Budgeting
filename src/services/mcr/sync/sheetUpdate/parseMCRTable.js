@@ -1,38 +1,17 @@
-import { getLastRowofTable_ } from "../../shared/getLastRowofTable";
+import { getReadyRows } from "./getReadyRows";
+import { buildMCRFormOrderMapping } from "./buildMCRFormOrderMapping";
 
 export function parseMCRTable(ui, mcrSheet, mcrCfgObj) {
     
-    const readyRows = [];
+    // grab the Ready to Sync Rows
+    const readyRows = getReadyRows(ui, mcrSheet,mcrCfgObj);
 
-    try {
-        const startRowPos = mcrCfgObj.table_start_row;
-        const status_column_id = mcrCfgObj.mcr_status_column;
-        const lastRowPos = getLastRowofTable_(mcrSheet,mcrCfgObj);
+    // create a form order mapping for whole mcr table
+    const idToFormOrderMapping = buildMCRFormOrderMapping(ui, mcrSheet, mcrCfgObj);
 
-        //If table has no entries, abort
-        if(lastRowPos < startRowPos) return;
-
-    
-        // Grab Status Values from Status Column
-        const statusCells = mcrSheet.getRange(startRowPos, status_column_id, lastRowPos-startRowPos+1, 1);
-        const statusValues = statusCells.getValues();
-
-        statusValues.forEach(
-            (r,i)=>{
-            // grab text but remove whitespace
-            // compare against ready to sync string
-            // add row value to readyRows array
-            if(String(r[0]).trim() === "READY TO SYNC"){
-                readyRows.push(startRowPos + i)
-            };
-            }
-        );
-    } catch (err) {
-        ui.alert(`Could not parse MCR Table.\n${err.message}`);
-        throw err;
+    return {
+        readyRows: readyRows,
+        idToFormOrderMapping: idToFormOrderMapping,
     }
     
-    if(!readyRows.length) return [];
-    
-    return readyRows; 
 };

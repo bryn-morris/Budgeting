@@ -15,10 +15,10 @@ export function syncMCR() {
   try {
 
     // Grab data from Ready Rows in MCR Table
-    const readyRows = parseMCRTable(ui, mcrSheet, mcrCfgObj);
+    const {readyRows, idToFormOrderMapping} = parseMCRTable(ui, mcrSheet, mcrCfgObj);
 
     // SyncMCR to Other Sheets, return the rows that were processed
-    const processedRows = syncMCRRowsToSheets_(ss,mcrSheet, mcrCfgObj, readyRows);
+    const processedRows = syncMCRRowsToSheets_(ss,mcrSheet, mcrCfgObj, readyRows, idToFormOrderMapping);
 
     // SyncMCR rows to Form
     syncMRCRowsToForm(ss, ui, mcrSheet, mcrCfgObj);
