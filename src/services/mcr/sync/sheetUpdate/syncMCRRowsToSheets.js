@@ -2,10 +2,12 @@ import { parseMCRLine_ } from "./parseMCRLine.js";
 import { CONFIG_OBJECT } from "../../../../config/config.js";
 import { upsertMCRLine_ } from "./upsertMCRLine.js";
 import { upsertPoolTotalRow_ } from "./upsertPoolTotalRow.js"
+import { reorderTargetTable } from "./reorderTargetTable.js";
 
 export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows, idToFormOrderMapping) {
   
   const processedRows = [];
+  const editedSheets = new Set();
   
   try {
 
@@ -29,7 +31,15 @@ export function syncMCRRowsToSheets_(ss, mcrSheet, mcrCfgObj, readyRows, idToFor
       }
 
       processedRows.push(row);
+      editedSheets.add(targetSheetName);
+
     }
+
+    // Reorder each sheet that was edited
+    editedSheets.forEach(targetSheetName => {
+      const targetCfg = CONFIG_OBJECT.sheets[targetSheetName];
+      reorderTargetTable(ss, targetSheetName, targetCfg, idToFormOrderMapping);
+    })
 
     // Mark only successfully processed rows as DONE
     processedRows.forEach(r => {
