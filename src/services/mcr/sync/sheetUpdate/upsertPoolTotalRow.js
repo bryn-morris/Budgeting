@@ -51,10 +51,6 @@ export function upsertPoolTotalRow_(ss, poolsSheetName, poolsCfg, entry) {
   sheet.getRange(targetRow, idCol).setValue(entry.id);
   sheet.getRange(targetRow, nameCol).setValue(entry.name);
 
-  // Merge cells C-D and F-G
-  sheet.getRange(targetRow, 3, 1, 2).breakApart().merge();
-  sheet.getRange(targetRow, 6, 1, 2).breakApart().merge();
-
   // if spacer row was used, insert another spacer row
   if (appendedRow) {
     sheet.insertRowAfter(targetRow);

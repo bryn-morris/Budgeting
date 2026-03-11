@@ -21,5 +21,15 @@ export function formatTable(sheet, cfg) {
 
   setTableFont(sheet, startRow, startCol, numRows, numCols);
 
-  
+  if (cfg.tab_name === CONFIG_OBJECT.category_mapping.pool) {
+
+    for (let i =0; i< numRows; i++) {
+      const row = startRow + i;
+
+      // Merge cells C-D and F-G
+      sheet.getRange(row, 3, 1, 2).merge();
+      sheet.getRange(row, 6, 1, 2).merge();
+    }
+
+  }
 }
