@@ -24,9 +24,14 @@ export function syncMCR() {
     syncMRCRowsToForm(ss, ui, mcrSheet, mcrCfgObj);
 
     // Cleanup
-    cleanupMCRSync(ss, mcrCfgObj, mcrSheet);
+    const deletedEntries = cleanupMCRSync(ss, mcrCfgObj, mcrSheet);
 
-    SpreadsheetApp.getUi().alert(`Sync complete.\nProcessed: ${processedRows.length}`);
+    // Alert
+    ss.toast(
+    `Processed: ${processedRows.length} | Cleaned: ${deletedEntries}`,
+    `MCR Sync Complete`,
+    5 // seconds
+    );
 
   } catch (err) {
     ui.alert(`Sync failed.\n${err.message}`);

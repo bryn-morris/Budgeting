@@ -24,28 +24,22 @@ export function cleanupMCRSync(
   deletedEntries += cleanupTargetTable_(incomeSheet, validIncomeIds);
 
   // --- Recurring ---
-  
   const recurringConfig = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.recurring];
   const recurringSheet = ss.getSheetByName(recurringConfig.tab_name);
   deletedEntries += cleanupTargetTable_(recurringSheet, validRecurringIds);
   
 
   // --- Variable ---
-  
   const variableConfig = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.variable];
   const variableSheet = ss.getSheetByName(variableConfig.tab_name);
   deletedEntries += cleanupTargetTable_(variableSheet, validVariableIds);
   
 
   // --- Pools ---
-  
+
   const poolConfig = CONFIG_OBJECT.sheets[CONFIG_OBJECT.category_mapping.pool];
   const poolSheet = ss.getSheetByName(poolConfig.tab_name);
   deletedEntries += cleanupTargetTable_(poolSheet, validPoolIds);
 
-  SpreadsheetApp.getActive().toast(
-    `Cleanup complete: ${deletedEntries} rows removed.`,
-    "MCR Sync",
-    5 // seconds
-  );
+  return deletedEntries;
 };
