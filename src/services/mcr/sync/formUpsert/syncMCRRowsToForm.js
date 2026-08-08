@@ -4,6 +4,7 @@ import { expenseCategoryConstructor } from "./constructor/expenseCategoryConstru
 import { incomeCategoryConstructor } from "./constructor/incomeCategoryCosntructor";
 import { poolsCategoryConstructor } from "./constructor/poolCategoryConstructor";
 import { setDropdownChoicesByItemId } from "./setDropdownChoicesByItemId";
+import { syncPoolDropdownData_ } from "./syncPoolDropdownData";
 
 export function syncMRCRowsToForm(
         ss,
@@ -28,14 +29,12 @@ export function syncMRCRowsToForm(
         //construct dropdown category Arrays
         const expenseCatArray = expenseCategoryConstructor(formDataByType);
         const incomeCatArray = incomeCategoryConstructor(formDataByType);
-        const poolsCatArray = poolsCategoryConstructor(formDataByType, poolIdBalMap);
-    
+      
         //Push Category Changes
         setDropdownChoicesByItemId(form, ids.expense_category, expenseCatArray);
         setDropdownChoicesByItemId(form, ids.income_category, incomeCatArray);
-        setDropdownChoicesByItemId(form, ids.expense_pools_category, poolsCatArray);
-        setDropdownChoicesByItemId(form, ids.pool_funding_category, poolsCatArray);
-
+        syncPoolDropdownData_(form,formDataByType,poolIdBalMap);
+        
     } catch (err) {
     ui.alert(`Form Category Sync failed.\n${err.message}`);
     throw err;

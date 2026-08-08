@@ -28,9 +28,9 @@ export function syncMCR() {
 
     // Alert
     ss.toast(
-    `Processed: ${processedRows.length} | Cleaned: ${deletedEntries}`,
-    `MCR Sync Complete`,
-    5 // seconds
+      `Processed: ${processedRows.length} | Cleaned: ${deletedEntries}`,
+      `MCR Sync Complete`,
+      5 // seconds
     );
 
   } catch (err) {

@@ -1,5 +1,3 @@
-
-
 export function getLastRowafterFirstBlank (sheet, startRow, idCol) {
 
     const capLast = sheet.getLastRow(); // just an upper bound
