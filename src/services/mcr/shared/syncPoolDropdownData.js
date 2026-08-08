@@ -1,4 +1,4 @@
-import { getActiveMcrByType_ } from "./getActiveMCRbyType";
+import { getActiveMcrByType_ } from "../sync/formUpsert/getActiveMCRbyType";
 
 
 export function syncPoolDropdownData_(
@@ -7,6 +7,7 @@ export function syncPoolDropdownData_(
     poolIdBalMap,
 ) {
 
+    const ids = CONFIG_OBJECT.form.dropdown_ids
     const poolsCatArray = poolsCategoryConstructor(formDataByType, poolIdBalMap);
 
     setDropdownChoicesByItemId(form, ids.expense_pools_category, poolsCatArray);

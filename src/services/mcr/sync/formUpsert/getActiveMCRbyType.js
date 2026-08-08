@@ -9,7 +9,7 @@ export function getActiveMcrByType_(ss, mcrSheet, cfg) {
 
   if (lastRow < startRow) return out;
 
-  // 🔹 Build recurring autopay index once
+  // Build recurring autopay index once
   const recurringCfg = CONFIG_OBJECT.sheets["Recurring Payments (Fixed Monthly Expenses)"];
   const autopayById = recurringCfg
     ? buildRecurringAutopayIndex_(ss, recurringCfg)
@@ -39,7 +39,7 @@ export function getActiveMcrByType_(ss, mcrSheet, cfg) {
     if (!id || !name) return;
     if (!out[type]) return;
 
-    // 🔑 Business rule: exclude recurring autopay categories
+    // exclude recurring autopay categories
     if (type === "recurring" && autopayById.get(id) === true) {
       return;
     }

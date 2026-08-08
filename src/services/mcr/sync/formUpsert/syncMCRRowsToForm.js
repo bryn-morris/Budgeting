@@ -4,7 +4,7 @@ import { expenseCategoryConstructor } from "./constructor/expenseCategoryConstru
 import { incomeCategoryConstructor } from "./constructor/incomeCategoryCosntructor";
 import { poolsCategoryConstructor } from "./constructor/poolCategoryConstructor";
 import { setDropdownChoicesByItemId } from "./setDropdownChoicesByItemId";
-import { syncPoolDropdownData_ } from "./syncPoolDropdownData";
+import { syncPoolDropdownData_ } from "../../shared/syncPoolDropdownData";
 
 export function syncMRCRowsToForm(
         ss,
