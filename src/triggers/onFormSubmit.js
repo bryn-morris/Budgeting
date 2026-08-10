@@ -3,24 +3,25 @@ import { syncPoolDropdownData_ } from "../services/mcr/shared/syncPoolDropdownDa
 
 export function onFormSubmit(e){
 
-    const ss = e.source;
+    console.log(e.namedValues)
 
-    const mcrCfgObj = CONFIG_OBJECT.sheets["Master Category Registry"];
-    const mcrSheet = ss.getSheetByName(mcrCfgObj.tab_name);
+    // const ss = e.source;
 
-    SpreadsheetApp.flush();
+    // const mcrCfgObj = CONFIG_OBJECT.sheets["Master Category Registry"];
+    // const mcrSheet = ss.getSheetByName(mcrCfgObj.tab_name);
 
-    const form = FormApp.openById(CONFIG_OBJECT.form.form_id);
-    const formDataByType = getActiveMcrByType_(ss, mcrSheet, mcrCfgObj);
+    // SpreadsheetApp.flush();
+
+    // const form = FormApp.openById(CONFIG_OBJECT.form.form_id);
+    // const formDataByType = getActiveMcrByType_(ss, mcrSheet, mcrCfgObj);
 
     // Parse Form Data
-    // Update Sheet
+    // Update Sheet(s)
     // Read Sheet to update form
     
-    // Sync New Pool Balances to 
+    // Sync New Pool Balances to form dropdowns
 
-    //  //getPoolAmountsById
-    // const poolIdBalMap = getPoolBalancesById_(ss);
-
-    // syncPoolDropdownData_(form, formDataByType, )
+        //  //getPoolAmountsById
+        // const poolIdBalMap = getPoolBalancesById_(ss);
+        // syncPoolDropdownData_(form, formDataByType, )
 };

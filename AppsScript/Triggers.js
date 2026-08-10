@@ -9,3 +9,7 @@ function runMCRSync(e) {
 function onAddMCRRow(e) {
     return globalThis._onAddMCRRow(e);
 }
+
+function onFormSubmit(e) {
+    return globalThis._onAddMCRRow(e);
+}
