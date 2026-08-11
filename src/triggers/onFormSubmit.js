@@ -3,6 +3,7 @@ import { syncPoolDropdownData_ } from "../services/mcr/shared/syncPoolDropdownDa
 
 export function onFormSubmit(e){
 
+    console.log("test")
     console.log(e.namedValues)
 
     // const ss = e.source;

@@ -11,15 +11,15 @@ globalThis._onEdit = function (e) {
     return onEdit(e)
 };
 globalThis._runMCRSync = function (e) {
-    return runMCRSync(e)
+    runMCRSync(e)
 };
 
 globalThis._onAddMCRRow = function (e) {
-    return onAddMCRRow(e)
+    onAddMCRRow(e)
 };
 
-globalThis._onFormSubmission = function (e) {
-    return onFormSubmit(e)
+globalThis._onFormSubmit = function (e) {
+    onFormSubmit(e)
 };
 
 globalThis.CONFIG_OBJECT = CONFIG_OBJECT;

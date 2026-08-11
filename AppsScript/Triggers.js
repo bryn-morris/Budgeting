@@ -11,5 +11,5 @@ function onAddMCRRow(e) {
 }
 
 function onFormSubmit(e) {
-    return globalThis._onAddMCRRow(e);
+    return globalThis._onFormSubmit(e);
 }
