@@ -6,6 +6,57 @@ export const CONFIG_OBJECT = {
       expense_pools_category: "1067936705",
       income_category: "658637086",
       pool_funding_category: "1777025688",
+    },
+    question_titles: {
+      timestamp: "Timestamp",
+      submission_type: "What are you logging?",
+      expense: {
+        vendor_title: "Vendor/Title",
+        date: "Expense Date",
+        amount: "Expense Amount",
+        category: "Expense Category",
+        paid_via: "Paid Via",
+        pool_category: "Pool Expense Category",
+        pool_withdrawal_amount: "Pool Withdrawal Amount",
+        paid_back_via_venmo: "Paid back via Venmo?",
+        venmo_reimbursements: [
+          "Venmo reimbursement 1",
+          "Venmo reimbursement 2",
+          "Venmo reimbursement 3",
+          "Venmo reimbursement 4"
+        ]
+      },
+      income: {
+        date: "Income Date",
+        amount: "Income Amount",
+        category: "Income Category"
+      },
+      pool_funding: {
+        date:"Pool Funding Date",¬
+        category: "Pool Funding Category",
+        contribution_amount: "Pool Contribution Amount"
+      },
+      savings_transfer: {
+        date: "Savings Transfer Date",
+        amount: "Savings Transfer Amount",
+        direction: "Savings Direction"
+      }
+    },
+    answer_values: {
+      submission_types: {
+        expense: "Expense",
+        income: "Income",
+        pool_funding: "Pool Funding",
+        savings_transfer: "Savings Transfer"
+      },
+      paid_via: {
+        bank:"Bank",
+        venmo:"Venmo"
+      },
+      savings_directions: {
+        deposit: "Deposit to Savings",
+        withdrawal: "Withdrawal from Savings"
+      }
     }
   },
   sheets: {

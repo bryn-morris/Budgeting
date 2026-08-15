@@ -1,10 +1,27 @@
 import { getActiveMcrByType_ } from "../services/mcr/sync/formUpsert/getActiveMCRbyType";
 import { syncPoolDropdownData_ } from "../services/mcr/shared/syncPoolDropdownData";
+import { parseFormSubmission } from "../services/parseForm/parseFormSubmission";
 
 export function onFormSubmit(e){
 
-    console.log("test")
-    console.log(e.namedValues)
+    // validate submission
+
+    try {
+
+        const formData = e.namedValues;
+
+        if (!e) throw new Error;
+
+        // Parse and normalize submission
+        parseFormSubmission(formData);
+
+        // route submission
+        // process
+
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
 
     // const ss = e.source;
 
