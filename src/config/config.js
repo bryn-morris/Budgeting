@@ -32,7 +32,7 @@ export const CONFIG_OBJECT = {
         category: "Income Category"
       },
       pool_funding: {
-        date:"Pool Funding Date",¬
+        date:"Pool Funding Date",
         category: "Pool Funding Category",
         contribution_amount: "Pool Contribution Amount"
       },
