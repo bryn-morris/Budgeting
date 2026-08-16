@@ -1,4 +1,4 @@
-import { CONFIG_OBJECT } from "../config/config";
+import { CONFIG_OBJECT } from "../../config/config";
 import { processExpense_ } from "./processExpense";
 
 export function routeSub_(
