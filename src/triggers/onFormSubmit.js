@@ -1,6 +1,7 @@
 import { getActiveMcrByType_ } from "../services/mcr/sync/formUpsert/getActiveMCRbyType";
 import { syncPoolDropdownData_ } from "../services/mcr/shared/syncPoolDropdownData";
-import { parseFormSubmission } from "../services/parseForm/parseFormSubmission";
+import { flattenValues } from "../services/parseForm/flattenValues";
+
 
 export function onFormSubmit(e){
 
@@ -8,14 +9,16 @@ export function onFormSubmit(e){
 
     try {
 
-        const formData = e.namedValues;
-
         if (!e) throw new Error;
 
-        // Parse and normalize submission
-        parseFormSubmission(formData);
+        const formData = e.namedValues;
+
+        // Flatten Values
+        const flattenedValues = flattenValues(formData);
 
         // route submission
+        routeSub_(flattenedValues);
+        
         // process
 
     } catch (err) {
