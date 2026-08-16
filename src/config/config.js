@@ -43,7 +43,7 @@ export const CONFIG_OBJECT = {
       }
     },
     answer_values: {
-      submission_types: {
+      submission_type: {
         expense: "Expense",
         income: "Income",
         pool_funding: "Pool Funding",

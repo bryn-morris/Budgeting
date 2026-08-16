@@ -18,8 +18,6 @@ export function onFormSubmit(e){
 
         // route submission
         routeSub_(flattenedValues);
-        
-        // process
 
     } catch (err) {
         console.log(err);
